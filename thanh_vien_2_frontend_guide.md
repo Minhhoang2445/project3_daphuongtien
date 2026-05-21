@@ -1,172 +1,80 @@
-# Huong dan cong viec thanh vien 2 - Frontend
+# Hướng Dẫn Công Việc Thành Viên 2 - Frontend
 
-Nguon: `project3_plan.pdf`, muc 4, 5.2, 16, 17, 18, 19. Trong PDF, **thanh vien 2 = Frontend**.
+Nguồn: `project3_plan.pdf`, các mục 4, 5.2, 16, 17, 18, 19. Trong PDF, **thành viên 2 = Frontend**.
 
-Ban khong phai nguoi chinh lam VOD RTMP/HLS, adaptive 360p/480p/720p, FFmpeg hay bao cao tong hop. Phan do nam o nguoi 4. Viec cua ban la lam web mini Twitch goi duoc API, phat duoc HLS, co dashboard streamer, VOD UI, chat UI va trang guide.
+Bạn không phải người chính làm RTMP/HLS server, VOD adaptive 360p/480p/720p, FFmpeg hay báo cáo tổng hợp. Phần đó thuộc người 4. Việc của bạn là làm web mini Twitch gọi được API, phát được HLS, có dashboard streamer, VOD UI, chat UI, guide OBS/Larix và các trạng thái loading/error/offline/live rõ ràng.
 
-## 1. Dau ra can ban giao
+## 1. Đầu Ra Cần Bàn Giao
 
-Cuoi cung ban can co:
+- Home page hiển thị danh sách stream đang live và VOD nổi bật.
+- Login/register gọi API auth và lưu token.
+- Live page có HLS player bằng `hls.js`, thông tin streamer, trạng thái live/offline và chat UI.
+- Dashboard streamer hiển thị RTMP URL, Stream Key, HLS URL, nút sao chép, nút regenerate và form sửa title/description.
+- VOD list/detail, detail phát được HLS URL của VOD.
+- Chat UI có history và WebSocket realtime nếu backend hỗ trợ.
+- Guide page hướng dẫn cấu hình OBS/Larix.
+- Loading, error, empty, offline, live state rõ ràng.
+- Ảnh minh chứng: home, login, dashboard, live player, chat, VOD player, guide, loading/error/offline state.
 
-- Home page hien thi danh sach stream dang live va VOD noi bat.
-- Login/register goi API auth va luu token.
-- Live page co player HLS bang `VideoJS` hoac `HLS.js`, thong tin streamer, trang thai live/offline va chat UI.
-- Dashboard streamer hien thi RTMP URL, stream key, HLS URL, nut copy, nut regenerate, form sua title/description.
-- VOD list/detail, detail phat duoc HLS URL cua VOD.
-- Chat UI co history va WebSocket realtime neu backend ho tro.
-- Guide page huong dan cau hinh OBS/Larix.
-- Loading, error, offline, live state ro rang.
-- Anh minh chung: home, login, dashboard, live player, chat, VOD player, guide, loading/error/offline state.
+## 2. Thư Mục Làm Việc Đúng
 
-## 2. Thu muc lam viec dung
-
-Thu muc lam bai cua ban la:
+Thư mục làm bài của bạn là:
 
 ```powershell
 cd ".\git\project3_daphuongtien"
 ```
 
-Luu y: folder `pull/streamix` **chi de tham khao**, khong code truc tiep vao do. Neu can xem cach ho lam UI/player/chat/dashboard thi doc file trong `pull/streamix`, sau do tu implement vao `project3_daphuongtien`.
+Lưu ý: folder `pull/streamix` **chỉ để tham khảo**, không code trực tiếp vào đó. Nếu cần xem cách họ làm UI/player/chat/dashboard thì đọc file trong `pull/streamix`, sau đó tự implement vào `project3_daphuongtien`.
 
-Hien tai repo `project3_daphuongtien` moi chi co `.git`, chua co source code app. Buoc dau tien cua ban la thong nhat voi nhom se dung framework nao cho frontend. De lam nhanh va hop voi project tham khao, nen dung Next.js hoac React + Vite.
+## 3. Route Cần Làm Theo PDF
 
-Neu lenh tao app bao folder khong trong vi dang co file guide nay, tao source app truoc roi dat file guide vao `docs/`, hoac tao app trong folder tam va chuyen source vao `project3_daphuongtien` sau.
-
-Neu chon Next.js, tao app trong chinh folder nay:
-
-```powershell
-cd ".\git\project3_daphuongtien"
-npx create-next-app@latest . --ts --eslint --app --src-dir
-npm install hls.js lucide-react
-npm run dev
-```
-
-Neu chon React + Vite:
-
-```powershell
-cd ".\git\project3_daphuongtien"
-npm create vite@latest . -- --template react-ts
-npm install
-npm install hls.js lucide-react react-router-dom
-npm run dev
-```
-
-Sau khi chay dev server, mo trinh duyet tai:
-
-```text
-http://localhost:3000
-```
-
-Neu dung Vite, URL thuong la:
-
-```text
-http://localhost:5173
-```
-
-Tu `pull/streamix`, phan nen tham khao nhat la:
-
-- `src/components/stream-player/vod-player.tsx`: cach dung `hls.js` va quality selector.
-- `src/app/(browse)/(home)`: cach lam home/list stream.
-- `src/app/(dashboard)/u/[username]/keys`: cach hien RTMP URL va stream key.
-- `src/components/stream-player/chat*`: cach chia chat UI.
-
-## 3. Route can lam theo PDF
-
-PDF yeu cau cac route sau:
-
-| Route | Muc dich | API |
+| Route | Mục đích | API |
 | --- | --- | --- |
-| `/` | Trang chu: live streams va VOD noi bat | `GET /streams/live`, `GET /videos` |
-| `/login` | Dang nhap | `POST /auth/login` |
-| `/register` | Dang ky | `POST /auth/register` |
-| `/live/:username` | Xem live: player, chat, thong tin streamer | `GET /streams/:username`, `GET /streams/:streamId/chat`, WebSocket |
+| `/` | Trang chủ: live streams và VOD nổi bật | `GET /streams/live`, `GET /videos` |
+| `/login` | Đăng nhập | `POST /auth/login` |
+| `/register` | Đăng ký | `POST /auth/register` |
+| `/live/:username` | Xem live: player, chat, thông tin streamer | `GET /streams/:username`, `GET /streams/:streamId/chat`, WebSocket |
 | `/dashboard` | Dashboard streamer | `GET /stream-key`, `POST /stream-key/regenerate`, `PUT /streams/me` |
-| `/videos` | Danh sach VOD | `GET /videos` |
-| `/videos/:id` | Xem chi tiet VOD bang HLS player | `GET /videos/:id` |
-| `/guide` | Huong dan OBS/Larix | static hoac `GET /stream-key` neu da dang nhap |
+| `/videos` | Danh sách VOD | `GET /videos` |
+| `/videos/:id` | Xem chi tiết VOD bằng HLS player | `GET /videos/:id` |
+| `/guide` | Hướng dẫn OBS/Larix | static hoặc `GET /stream-key` nếu đã đăng nhập |
 
-Trong `pull/streamix` tham khao, ten route hoi khac:
+Khi implement trong `project3_daphuongtien`, đặt route đúng với PDF: `/login`, `/register`, `/live/[username]`, `/dashboard`, `/videos`, `/videos/[id]`, `/guide`.
 
-| PDF | Repo hien co |
-| --- | --- |
-| `/login` | `src/app/(auth)/sign-in/page.tsx` |
-| `/register` | `src/app/(auth)/sign-up/page.tsx` |
-| `/live/:username` | `src/app/(browse)/[username]/page.tsx` |
-| `/dashboard` | `src/app/(dashboard)/u/[username]/...` |
-| VOD player | `src/components/stream-player/vod-player.tsx` |
+## 4. Bước 1 - Chuẩn Hóa API Client
 
-Khi implement trong `project3_daphuongtien`, nen dat route dung voi PDF: `/login`, `/register`, `/live/[username]`, `/dashboard`, `/videos`, `/videos/[id]`, `/guide`.
-
-## 4. Buoc 1 - Chuan hoa API client
-
-Tao file goi API rieng, vi frontend se dung lai o nhieu page.
-
-De xuat file:
+Tạo file gọi API riêng để frontend dùng lại ở nhiều page:
 
 ```text
 src/lib/api-client.ts
 ```
 
-Noi dung mau:
+API client nên:
 
-```ts
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://IP_VPS/api/v1";
+- Đọc `NEXT_PUBLIC_API_BASE_URL`.
+- Tự gắn `Authorization: Bearer ...` nếu có token.
+- Parse response wrapper `{ success, message, data, error }`.
+- Ném lỗi rõ ràng khi backend không kết nối được.
 
-type ApiResponse<T> = {
-  success: boolean;
-  message: string;
-  data?: T;
-  error?: {
-    code: string;
-    details?: string;
-  };
-};
-
-export async function apiRequest<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
-
-  const body = (await response.json()) as ApiResponse<T>;
-
-  if (!response.ok || !body.success) {
-    throw new Error(body.message || "API request failed");
-  }
-
-  return body.data as T;
-}
-```
-
-Them `.env.local`:
+Ví dụ `.env`:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://IP_VPS/api/v1
-NEXT_PUBLIC_WS_URL=ws://IP_VPS
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+NEXT_PUBLIC_WS_URL=ws://localhost:8080
+NEXT_PUBLIC_SAMPLE_HLS_URL=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
 ```
 
-Neu backend chua xong, ban tao mock data tam de lam giao dien truoc. Khi backend xong chi thay ham goi API.
+Nếu backend chưa xong, dùng mock data tạm để làm giao diện trước. Khi backend xong chỉ thay hàm gọi API.
 
-## 5. Buoc 2 - Login/register
+## 5. Bước 2 - Login/Register
 
-Can lam:
+Cần làm:
 
 - Form login: email, password.
 - Form register: username, email, password, role.
-- Sau login, luu `accessToken` vao `localStorage`.
-- Luu user vao state/context hoac goi `GET /auth/me`.
-- Neu sai mat khau hoac API loi, hien message.
+- Sau login, lưu `accessToken` vào `localStorage`.
+- Lưu user vào state/context hoặc gọi `GET /auth/me`.
+- Nếu sai mật khẩu hoặc API lỗi, hiển thị message.
 
 API trong PDF:
 
@@ -178,90 +86,64 @@ GET  /api/v1/auth/me
 
 Checklist test:
 
-- Dang ky tai khoan `STREAMER`.
-- Dang nhap thanh cong.
-- Reload trang van lay lai duoc user bang token.
-- Dang xuat xoa token.
+- Đăng ký tài khoản `STREAMER`.
+- Đăng nhập thành công.
+- Reload trang vẫn lấy lại được user bằng token.
+- Đăng xuất xóa token.
 
-## 6. Buoc 3 - Home page
+## 6. Bước 3 - Home Page
 
-Home page can co 2 khu vuc:
+Home page cần có 2 khu vực:
 
-- `Live now`: danh sach stream dang live tu `GET /streams/live`.
-- `VOD`: danh sach video tu `GET /videos`.
+- `Live now`: danh sách stream đang live từ `GET /streams/live`.
+- `VOD`: danh sách video từ `GET /videos`.
 
-Moi live card nen co:
+Mỗi live card nên có thumbnail, title, streamer username, badge `LIVE`, viewer count và link đến `/live/{username}`.
 
-- Thumbnail neu co.
-- Ten live, streamer username.
-- Badge `LIVE`.
-- Viewer count.
-- Link den `/live/{username}`.
+Mỗi VOD card nên có thumbnail, title, duration, createdAt, streamer và link đến `/videos/{id}`.
 
-Moi VOD card nen co:
-
-- Thumbnail neu co.
-- Title, duration, createdAt.
-- Streamer.
-- Link den `/videos/{id}`.
-
-Trang thai can co:
+Trạng thái cần có:
 
 - Loading skeleton.
-- Empty state: chua co stream dang live.
-- Error state: khong ket noi duoc backend.
+- Empty state: chưa có stream đang live hoặc chưa có VOD.
+- Error/mock state: không kết nối được backend nhưng vẫn có dữ liệu mẫu để demo.
 
-## 7. Buoc 4 - HLS player cho live va VOD
+## 7. Bước 4 - HLS Player Cho Live Và VOD
 
-Theo PDF, player phai phat HLS bang `VideoJS/HLS.js`.
+Theo PDF, player phải phát HLS bằng `VideoJS` hoặc `hls.js`.
 
-Repo da co player HLS kha tot:
-
-```text
-src/components/stream-player/vod-player.tsx
-```
-
-File nay da dung:
-
-- `hls.js`
-- `.m3u8`
-- quality levels
-- Auto quality
-- Play/pause/volume/fullscreen
-
-Ban co the tach thanh component chung:
+Nên tách thành component chung:
 
 ```text
 src/components/hls-player.tsx
 ```
 
-Hoac dung lai `VodPlayer` cho ca live va VOD neu can demo nhanh.
-
-Nguon HLS se co dang:
+Nguồn HLS sẽ có dạng:
 
 ```text
 Live: http://IP_VPS/hls/{streamKey}.m3u8
 VOD:  http://IP_VPS/vod-hls/sample/index.m3u8
 ```
 
-Luu y khi test:
+Lưu ý khi test:
 
-- Neu web chay `http://localhost:3000`, HLS URL cung nen la `http://...`, tranh loi mixed content.
-- Nginx can bat CORS cho `.m3u8` va `.ts`.
-- Neu player khong load, mo DevTools > Network de xem `.m3u8` va `.ts` co 200 khong.
+- Nếu web chạy `http://localhost:3000`, HLS URL cũng nên là `http://...` để tránh mixed content.
+- Nginx cần bật CORS cho `.m3u8` và `.ts`.
+- Nếu player không load, mở DevTools > Network để xem `.m3u8` và `.ts` có trả `200` không.
+- Nếu URL là adaptive master playlist, player phải hiện Auto/360p/480p/720p nếu `hls.js` đọc được levels.
 
-## 8. Buoc 5 - Live page `/live/:username`
+## 8. Bước 5 - Live Page `/live/:username`
 
-Page nay la man hinh demo quan trong nhat cua ban.
+Đây là màn hình demo quan trọng nhất.
 
-Can hien thi:
+Cần hiển thị:
 
-- HLS player o tren.
-- Ten stream, title, description.
+- HLS player.
+- Tên stream, title, description.
 - Streamer username/avatar.
-- Trang thai `LIVE` hoac `OFFLINE`.
-- Viewer count neu API co.
-- Chat panel ben phai hoac ben duoi tren mobile.
+- Trạng thái `LIVE` hoặc `OFFLINE`.
+- Viewer count nếu API có.
+- Chat panel bên phải hoặc bên dưới trên mobile.
 
 API:
 
@@ -273,21 +155,21 @@ WebSocket join_stream, send_message, new_message
 
 Logic:
 
-1. Lay stream detail theo username.
-2. Neu `status = LIVE` va co `hlsUrl`, render HLS player.
-3. Neu offline, hien offline state, khong de player bao loi tho.
-4. Lay chat history.
-5. Ket noi WebSocket va join room theo `streamId`.
+1. Lấy stream detail theo username.
+2. Nếu `status = LIVE` và có `hlsUrl`, render HLS player.
+3. Nếu offline, hiện offline state, không để player báo lỗi thô.
+4. Lấy chat history.
+5. Kết nối WebSocket và join room theo `streamId`.
 
-## 9. Buoc 6 - Chat UI
+## 9. Bước 6 - Chat UI
 
-Chat UI toi thieu:
+Chat UI tối thiểu:
 
 - List message.
 - Input message.
-- Nut send.
-- Disable input neu chua dang nhap.
-- Khi gui thanh cong, message hien len ngay.
+- Nút send.
+- Disable input nếu chưa đăng nhập.
+- Khi gửi thành công, message hiện lên ngay.
 
 WebSocket event trong PDF:
 
@@ -305,7 +187,7 @@ WebSocket event trong PDF:
   "event": "send_message",
   "data": {
     "streamId": 10,
-    "message": "Hello moi nguoi"
+    "message": "Hello mọi người"
   }
 }
 ```
@@ -316,7 +198,7 @@ WebSocket event trong PDF:
   "data": {
     "id": 12,
     "streamId": 10,
-    "message": "Hello moi nguoi",
+    "message": "Hello mọi người",
     "createdAt": "2026-05-20T22:56:00Z",
     "user": {
       "id": 2,
@@ -327,20 +209,20 @@ WebSocket event trong PDF:
 }
 ```
 
-Neu backend chua co WebSocket, ban lam UI + mock message truoc, roi ghi ro trong bao cao: "chat UI da san sang, realtime phu thuoc backend".
+Nếu backend chưa có WebSocket, làm UI + mock/local message trước, rồi ghi rõ trong báo cáo: "chat UI đã sẵn sàng, realtime phụ thuộc backend".
 
-## 10. Buoc 7 - Dashboard streamer
+## 10. Bước 7 - Dashboard Streamer
 
-Dashboard la noi streamer lay thong tin de nhap vao OBS.
+Dashboard là nơi streamer lấy thông tin để nhập vào OBS.
 
-Can hien thi:
+Cần hiển thị:
 
 - RTMP Server: `rtmp://IP_VPS:1935/live`
-- Stream Key: vi du `mh_9x8a2k`
+- Stream Key: ví dụ `mh_9x8a2k`
 - HLS URL: `http://IP_VPS/hls/mh_9x8a2k.m3u8`
-- Status: `OFFLINE` hoac `LIVE`
-- Nut copy tung truong.
-- Nut regenerate stream key.
+- Status: `OFFLINE` hoặc `LIVE`
+- Nút sao chép từng trường.
+- Nút regenerate Stream Key.
 - Form update title/description.
 
 API:
@@ -353,90 +235,81 @@ PUT  /api/v1/streams/me
 
 Checklist test:
 
-- Copy RTMP URL duoc.
-- Copy stream key duoc.
-- Regenerate xong UI cap nhat key moi.
-- Update title/description xong home/live page hien title moi.
+- Sao chép RTMP URL được.
+- Sao chép Stream Key được.
+- Regenerate xong UI cập nhật key mới.
+- Update title/description xong home/live page hiện title mới.
 
-## 11. Buoc 8 - VOD list/detail
+## 11. Bước 8 - VOD List/Detail
 
-Ban khong can convert video. Nguoi 4 se tao VOD HLS va them data qua backend.
+Bạn không cần convert video. Người 4 sẽ tạo VOD HLS và thêm data qua backend.
 
-Viec cua ban:
+Việc của bạn:
 
-- `/videos`: goi `GET /videos`, hien list.
-- `/videos/:id`: goi `GET /videos/:id`, dua `video.hlsUrl` vao HLS player.
-- Neu VOD la adaptive master playlist, player phai hien Auto/360p/480p/720p neu HLS.js doc duoc levels.
+- `/videos`: gọi `GET /videos`, hiện list.
+- `/videos/:id`: gọi `GET /videos/:id`, đưa `video.hlsUrl` vào HLS player.
+- Nếu VOD là adaptive master playlist, player phải hiện Auto/360p/480p/720p nếu `hls.js` đọc được levels.
 
-API:
-
-```text
-GET /api/v1/videos
-GET /api/v1/videos/:id
-```
-
-VOD URL mau:
+VOD URL mẫu:
 
 ```text
 http://IP_VPS/vod-hls/record-001/index.m3u8
 ```
 
-## 12. Buoc 9 - Guide page `/guide`
+## 12. Bước 9 - Guide Page `/guide`
 
-Trang guide nen ngan gon, dung cho demo va nguoi dung streamer.
+Trang guide dùng cho demo và người dùng streamer.
 
-Noi dung can co:
+Nội dung cần có:
 
 - OBS > Settings > Stream.
 - Service: Custom.
 - Server: `rtmp://IP_VPS:1935/live`.
-- Stream Key: lay trong dashboard.
-- Output settings goi y:
+- Stream Key: lấy trong dashboard.
+- Output settings gợi ý:
   - Resolution: 1280x720.
   - FPS: 30.
   - Video bitrate: 2500 Kbps.
   - Audio bitrate: 128 Kbps.
 - Larix:
   - New connection.
-  - URL: `rtmp://IP_VPS:1935/live/{streamKey}` hoac theo cach server nhan key.
+  - URL: `rtmp://IP_VPS:1935/live/{streamKey}` hoặc theo cách server nhận key.
   - Start broadcast.
 
-Co the hien thong tin stream key neu user da dang nhap.
+Có thể hiển thị thông tin Stream Key nếu user đã đăng nhập.
 
-## 13. Buoc 10 - Loading/error/offline/live state
+## 13. Bước 10 - Loading/Error/Offline/Live State
 
-PDF co checklist rieng cho phan nay, nen dung bo qua.
+PDF có checklist riêng cho phần này, nên đừng bỏ qua.
 
-Can co:
+Cần có:
 
-- Loading: skeleton/card shimmer khi dang fetch.
-- Error: "Khong ket noi duoc server" + nut retry.
+- Loading: skeleton/card shimmer khi đang fetch.
+- Error: "Không kết nối được server" + nút retry.
 - Offline: player placeholder khi stream offline.
 - Live: badge live, viewer count.
-- Empty: "Chua co VOD" hoac "Chua co stream dang live".
+- Empty: "Chưa có VOD" hoặc "Chưa có stream đang live".
 
-Day la phan de mat diem neu web chi chay luc du lieu dep.
+Đây là phần dễ mất điểm nếu web chỉ chạy lúc dữ liệu đẹp.
 
-## 14. Thu tu lam de demo duoc som
+## 14. Thứ Tự Làm Để Demo Được Sớm
 
-Lam theo thu tu nay:
+1. Chạy được project Next.js.
+2. Tạo API client và mock data nếu backend chưa xong.
+3. Làm home page với live cards và VOD cards.
+4. Làm HLS player phát URL `.m3u8` mẫu.
+5. Làm live page `/live/:username`.
+6. Làm login/register và token.
+7. Làm dashboard streamer.
+8. Làm VOD list/detail.
+9. Làm chat UI.
+10. Làm guide OBS/Larix.
+11. Thêm loading/error/offline states.
+12. Chụp ảnh minh chứng và quay demo.
 
-1. Chay duoc project Next.js.
-2. Tao API client va mock data neu backend chua xong.
-3. Lam home page voi live cards va VOD cards.
-4. Lam HLS player phat URL `.m3u8` mau.
-5. Lam live page `/live/:username`.
-6. Lam login/register va token.
-7. Lam dashboard streamer.
-8. Lam VOD list/detail.
-9. Lam chat UI.
-10. Lam guide OBS/Larix.
-11. Them loading/error/offline states.
-12. Chup anh minh chung va quay demo.
+## 15. Test Với HLS Thật
 
-## 15. Test voi HLS that
-
-Hoi nguoi 3/4 hoac nguoi phu trach server cac URL sau:
+Hỏi người 3/4 hoặc người phụ trách server các URL sau:
 
 ```text
 Live HLS: http://IP_VPS/hls/{streamKey}.m3u8
@@ -446,63 +319,49 @@ Adaptive: http://IP_VPS/vod-hls/adaptive/master.m3u8
 
 Test nhanh:
 
-1. Mo URL `.m3u8` tren trinh duyet, phai thay noi dung text playlist hoac download file.
-2. Mo DevTools > Network khi player chay.
-3. Kiem tra `.m3u8` va `.ts` tra ve status `200`.
-4. Neu adaptive, trong player phai co Auto/360p/480p/720p.
-5. Neu live, cho phep tre 5-20 giay vi HLS co latency.
+1. Mở URL `.m3u8` trên trình duyệt, phải thấy nội dung text playlist hoặc download file.
+2. Mở DevTools > Network khi player chạy.
+3. Kiểm tra `.m3u8` và `.ts` trả về status `200`.
+4. Nếu adaptive, trong player phải có Auto/360p/480p/720p.
+5. Nếu live, cho phép trễ 5-20 giây vì HLS có latency.
 
-## 16. Bang viec hang ngay
+## 16. Checklist Trước Khi Nộp
 
-| Ngay | Viec | Ket qua |
-| --- | --- | --- |
-| Ngay 1 | Chay project, doc route, tao API client, mock data | Home render duoc live/VOD fake |
-| Ngay 2 | Login/register, token, auth state | Dang nhap va goi `/auth/me` duoc |
-| Ngay 3 | HLS player + live page | Phat duoc `.m3u8` mau |
-| Ngay 4 | Dashboard streamer | Copy RTMP/key, regenerate, update title |
-| Ngay 5 | VOD list/detail + guide | Phat VOD HLS, co guide OBS/Larix |
-| Ngay 6 | Chat UI + loading/error/offline | UI day du state |
-| Ngay 7 | Tich hop server that, chup minh chung | San sang demo |
+- [ ] Home page có live list và VOD list.
+- [ ] Login/register gọi API được.
+- [ ] Token được lưu và gửi bằng `Authorization: Bearer ...`.
+- [ ] Live page phát được HLS khi `status = LIVE`.
+- [ ] Offline state hiện đúng khi stream offline.
+- [ ] Dashboard hiện RTMP URL, Stream Key, HLS URL.
+- [ ] Nút sao chép hoạt động.
+- [ ] Regenerate Stream Key cập nhật UI.
+- [ ] VOD list/detail phát được VOD HLS.
+- [ ] Chat UI có history và gửi message.
+- [ ] Guide OBS/Larix có thông tin đúng với server nhóm.
+- [ ] Có loading/error/empty state.
+- [ ] Có ảnh minh chứng cho từng màn hình.
 
-## 17. Checklist truoc khi nop
+## 17. Phần Cần Phối Hợp Với Thành Viên Khác
 
-- [ ] Home page co live list va VOD list.
-- [ ] Login/register goi API duoc.
-- [ ] Token duoc luu va gui bang `Authorization: Bearer ...`.
-- [ ] Live page phat duoc HLS khi `status = LIVE`.
-- [ ] Offline state hien dung khi stream offline.
-- [ ] Dashboard hien RTMP URL, stream key, HLS URL.
-- [ ] Nut copy hoat dong.
-- [ ] Regenerate stream key cap nhat UI.
-- [ ] VOD list/detail phat duoc VOD HLS.
-- [ ] Chat UI co history va gui message.
-- [ ] Guide OBS/Larix co thong tin dung voi server nhom.
-- [ ] Co loading/error/empty state.
-- [ ] Co anh minh chung cho tung man hinh.
+Với Backend:
 
-## 18. Phan can phoi hop voi thanh vien khac
+- Thống nhất `NEXT_PUBLIC_API_BASE_URL`.
+- Thống nhất response wrapper `{ success, message, data }`.
+- Thống nhất token JWT và role.
+- Thống nhất WebSocket URL/event.
 
-Voi Backend:
+Với Streaming tester:
 
-- Thong nhat `NEXT_PUBLIC_API_BASE_URL`.
-- Thong nhat response wrapper `{ success, message, data }`.
-- Thong nhat token JWT va role.
-- Thong nhat WebSocket URL/event.
+- Lấy Stream Key đang live để test player.
+- Lấy ảnh OBS/Larix nếu cần đưa vào guide.
+- Xác nhận latency HLS và status live/offline.
 
-Voi Streaming tester:
+Với VOD + Adaptive:
 
-- Lay stream key dang live de test player.
-- Lay anh OBS/Larix neu can dua vao guide.
-- Xac nhan latency HLS va status live/offline.
+- Lấy URL VOD HLS.
+- Lấy URL adaptive master playlist.
+- Xác nhận player hiện quality selector.
 
-Voi VOD + Adaptive:
+## 18. Câu Nói Khi Demo Phần Của Bạn
 
-- Lay URL VOD HLS.
-- Lay URL adaptive master playlist.
-- Xac nhan player hien quality selector.
-
-## 19. Cau noi khi demo phan cua ban
-
-Ban co the noi ngan gon:
-
-> Em phu trach frontend. Web cua em goi API backend de hien thi stream/VOD, xu ly dang nhap bang JWT, dashboard streamer de lay RTMP URL va stream key, live page phat HLS bang HLS.js, co chat UI va cac trang thai loading/error/offline. Phan VOD/adaptive do thanh vien khac tao playlist, frontend cua em doc `hlsUrl` va phat tren player, neu la master playlist thi hien quality selector.
+> Em phụ trách frontend. Web của em gọi API backend để hiển thị stream/VOD, xử lý đăng nhập bằng JWT, dashboard streamer để lấy RTMP URL và Stream Key, live page phát HLS bằng `hls.js`, có chat UI và các trạng thái loading/error/offline. Phần VOD/adaptive do thành viên khác tạo playlist, frontend của em đọc `hlsUrl` và phát trên player, nếu là master playlist thì hiện quality selector.

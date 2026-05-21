@@ -37,7 +37,7 @@ const initialState: VideosState = {
 };
 
 const filters: Array<{ label: string; value: VideoFilter }> = [
-  { label: "Tat ca", value: "ALL" },
+  { label: "Tất cả", value: "ALL" },
   { label: "VOD", value: "VOD" },
   { label: "Record", value: "RECORD" },
 ];
@@ -116,7 +116,7 @@ export function VideosPageClient() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="mb-2 text-sm font-semibold uppercase text-[#e12828]">
-                VOD library
+                Thư viện VOD
               </p>
               <h1 className="text-3xl font-bold tracking-normal">
                 Danh sách video đã lưu

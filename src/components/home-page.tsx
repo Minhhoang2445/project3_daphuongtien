@@ -104,7 +104,7 @@ export function HomePage() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#e12828]">
-                Home page
+                Trang chủ
               </p>
               <h1 className="text-3xl font-bold tracking-normal">
                 Live streams và VOD nổi bật

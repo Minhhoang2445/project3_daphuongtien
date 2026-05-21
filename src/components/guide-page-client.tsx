@@ -114,7 +114,7 @@ export function GuidePageClient() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="mb-2 text-sm font-semibold uppercase text-[#16803c]">
-                Stream setup guide
+                Hướng dẫn thiết lập stream
               </p>
               <h1 className="text-3xl font-bold tracking-normal">
                 Hướng dẫn OBS và Larix

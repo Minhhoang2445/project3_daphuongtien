@@ -82,7 +82,7 @@ export function LivePageClient({ username }: LivePageClientProps) {
       return {
         stream: stream ?? {
           id: 0,
-          title: `Live page cua @${username}`,
+          title: `Live page của @${username}`,
           description: "Mock offline stream để demo offline state.",
           status: "OFFLINE",
           hlsUrl: "",
