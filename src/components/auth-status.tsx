@@ -11,7 +11,7 @@ export function AuthStatus() {
   if (status === "loading") {
     return (
       <span className="rounded-md bg-[#eef1f5] px-3 py-2 text-sm text-[#596273]">
-        Dang kiem tra...
+        Đang kiểm tra...
       </span>
     );
   }
@@ -23,13 +23,13 @@ export function AuthStatus() {
           href="/login"
           className="rounded-md px-3 py-2 text-sm font-medium text-[#4c5666] hover:bg-[#eef1f5] hover:text-[#14171f]"
         >
-          Login
+          Đăng nhập
         </Link>
         <Link
           href="/register"
           className="rounded-md bg-[#14171f] px-3 py-2 text-sm font-semibold text-white hover:bg-[#2a303b]"
         >
-          Register
+          Đăng ký
         </Link>
       </div>
     );
@@ -48,7 +48,7 @@ export function AuthStatus() {
         className="inline-flex items-center gap-2 rounded-md border border-[#dde1e7] bg-white px-3 py-2 text-sm font-medium text-[#4c5666] hover:bg-[#f6f7f9]"
       >
         <LogOut className="size-4" />
-        Logout
+        Đăng xuất
       </button>
     </div>
   );

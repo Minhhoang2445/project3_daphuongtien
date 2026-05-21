@@ -22,7 +22,7 @@ type SiteHeaderProps = {
   subtitle?: string;
 };
 
-export function SiteHeader({ subtitle = "Frontend workspace" }: SiteHeaderProps) {
+export function SiteHeader({ subtitle = "Không gian frontend" }: SiteHeaderProps) {
   return (
     <header className="border-b border-[#dde1e7] bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
+import { LoadingBlock, StateNotice } from "@/components/state-feedback";
 import {
   getStreamKeyRequest,
   regenerateStreamKeyRequest,
@@ -39,9 +40,9 @@ const mockConnection: StreamConnection = {
 
 export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
   const [state, setState] = useState<DashboardState | null>(null);
-  const [title, setTitle] = useState("Demo livestream he thong mini Twitch");
+  const [title, setTitle] = useState("Demo livestream hệ thống Mini Twitch");
   const [description, setDescription] = useState(
-    "Buoi demo OBS stream len VPS Nginx RTMP"
+    "Buổi demo OBS stream lên VPS Nginx RTMP"
   );
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -64,7 +65,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
         notice:
           requestError instanceof Error
             ? requestError.message
-            : "Backend chua san sang, dang hien thi stream key mau",
+            : "Backend chưa sẵn sàng, đang hiển thị Stream Key mẫu",
       };
     }
   }, []);
@@ -104,9 +105,9 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
       setState({
         connection,
         mode: "ready",
-        notice: "Stream key da duoc regenerate tu backend.",
+        notice: "Stream Key đã được regenerate từ backend.",
       });
-      setMessage("Da tao stream key moi.");
+      setMessage("Đã tạo Stream Key mới.");
     } catch (requestError) {
       const suffix = Math.random().toString(36).slice(2, 8);
       const nextKey = `${user.username}_${suffix}`;
@@ -120,9 +121,9 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
         notice:
           requestError instanceof Error
             ? requestError.message
-            : "Regenerate API chua san sang, dang tao mock key",
+            : "Regenerate API chưa sẵn sàng, đang tạo mock key",
       });
-      setMessage("Backend chua san sang, da tao stream key mau tren UI.");
+      setMessage("Backend chưa sẵn sàng, đã tạo Stream Key mẫu trên UI.");
     } finally {
       setIsRegenerating(false);
     }
@@ -137,7 +138,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
     };
 
     if (!input.title) {
-      setError("Title khong duoc de trong.");
+      setError("Title không được để trống.");
       return;
     }
 
@@ -147,13 +148,13 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
 
     try {
       await updateStreamInfoRequest(input);
-      setMessage("Da cap nhat title/description tren backend.");
+      setMessage("Đã cập nhật title/description trên backend.");
     } catch (requestError) {
       setMessage(null);
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Khong cap nhat duoc stream info"
+          : "Không cập nhật được stream info"
       );
     } finally {
       setIsSaving(false);
@@ -161,14 +162,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
   }
 
   if (!state) {
-    return (
-      <div className="rounded-lg border border-[#dde1e7] bg-white p-6 text-[#596273]">
-        <div className="flex items-center gap-3">
-          <Loader2 className="size-5 animate-spin text-[#e12828]" />
-          Dang tai dashboard streamer...
-        </div>
-      </div>
-    );
+    return <LoadingBlock label="Đang tải dashboard streamer..." />;
   }
 
   return (
@@ -179,9 +173,9 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
             <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#16803c]">
               Streamer dashboard
             </p>
-            <h1 className="text-2xl font-bold">Xin chao, {user.username}</h1>
+            <h1 className="text-2xl font-bold">Xin chào, {user.username}</h1>
             <p className="mt-2 text-sm text-[#596273]">
-              Role hien tai: <span className="font-semibold">{user.role}</span>
+              Vai trò hiện tại: <span className="font-semibold">{user.role}</span>
             </p>
           </div>
 
@@ -191,20 +185,17 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
           >
             <RefreshCw className="size-4" />
-            Refresh
+            Làm mới
           </button>
         </div>
 
         {state.mode === "mock" && (
-          <div className="mt-5 flex items-start gap-3 rounded-md border border-[#f1c27a] bg-[#fff8ec] p-4 text-sm text-[#7a4a12]">
-            <AlertCircle className="mt-0.5 size-4 flex-none" />
-            <div>
-              <p className="font-semibold">Dang hien thi dashboard mau</p>
-              <p className="mt-1 leading-6">
-                {state.notice}. Khi backend chay, dashboard se dung du lieu that
-                tu `GET /stream-key`.
-              </p>
-            </div>
+          <div className="mt-5">
+            <StateNotice
+              tone="warning"
+              title="Đang hiển thị dashboard mẫu"
+              message={`${state.notice}. Khi backend chạy, dashboard sẽ dùng dữ liệu thật từ GET /stream-key.`}
+            />
           </div>
         )}
       </div>
@@ -230,7 +221,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <KeyRound className="size-5 text-[#e12828]" />
-            <h2 className="text-lg font-semibold">Streamer credentials</h2>
+            <h2 className="text-lg font-semibold">Thông tin streamer</h2>
           </div>
 
           <button
@@ -253,7 +244,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
           <CredentialRow label="Stream Key" value={state.connection.streamKey} />
           <CredentialRow label="HLS URL" value={state.connection.hlsUrl} />
           <div className="rounded-md border border-[#e2e6ec] bg-[#fafbfc] p-4">
-            <p className="text-sm font-semibold">Status</p>
+            <p className="text-sm font-semibold">Trạng thái</p>
             <span
               className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
                 state.connection.status === "LIVE"
@@ -271,7 +262,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
         <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
           <div className="mb-5 flex items-center gap-3">
             <Video className="size-5 text-[#e12828]" />
-            <h2 className="text-lg font-semibold">OBS setup</h2>
+            <h2 className="text-lg font-semibold">Cấu hình OBS</h2>
           </div>
 
           <ol className="space-y-3 text-sm text-[#596273]">
@@ -279,13 +270,13 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
               OBS &gt; Settings &gt; Stream &gt; Service: Custom.
             </li>
             <li className="rounded-md bg-[#f6f7f9] p-3">
-              Server: copy RTMP Server ben tren.
+              Server: sao chép RTMP Server bên trên.
             </li>
             <li className="rounded-md bg-[#f6f7f9] p-3">
-              Stream Key: copy Stream Key ben tren.
+              Stream Key: sao chép Stream Key bên trên.
             </li>
             <li className="rounded-md bg-[#f6f7f9] p-3">
-              Bam Start Streaming, sau do mo live page de xem HLS.
+              Bấm Start Streaming, sau đó mở live page để xem HLS.
             </li>
           </ol>
         </div>
@@ -331,7 +322,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
               ) : (
                 <Save className="size-4" />
               )}
-              Save stream info
+              Lưu stream info
             </button>
           </div>
         </form>

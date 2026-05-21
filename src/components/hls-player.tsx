@@ -27,9 +27,9 @@ export function HlsPlayer(props: HlsPlayerProps) {
       <PlayerFrame>
         <div className="flex h-full flex-col items-center justify-center text-center text-white">
           <Video className="mb-3 size-10 text-white/70" />
-          <p className="font-semibold">Chua co HLS URL</p>
+          <p className="font-semibold">Chưa có HLS URL</p>
           <p className="mt-1 text-sm text-white/70">
-            Backend can tra ve truong `hlsUrl`.
+            Backend cần trả về trường `hlsUrl`.
           </p>
         </div>
       </PlayerFrame>
@@ -104,18 +104,18 @@ function HlsPlayerInner({
         if (!data.fatal) return;
 
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          markError("Khong tai duoc HLS playlist hoac segment.");
+          markError("Không tải được HLS playlist hoặc segment.");
           hls.startLoad();
           return;
         }
 
         if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          markError("Loi media HLS, dang thu khoi phuc.");
+          markError("Lỗi media HLS, đang thử khôi phục.");
           hls.recoverMediaError();
           return;
         }
 
-        markError("Khong phat duoc HLS URL nay.");
+        markError("Không phát được HLS URL này.");
         hls.destroy();
       });
 
@@ -129,7 +129,7 @@ function HlsPlayerInner({
       video.src = src;
       video.addEventListener("loadedmetadata", markReady);
       video.addEventListener("error", () =>
-        markError("Trinh duyet khong phat duoc HLS URL nay.")
+        markError("Trình duyệt không phát được HLS URL này.")
       );
 
       return () => {
@@ -137,7 +137,7 @@ function HlsPlayerInner({
       };
     }
 
-    markError("Trinh duyet khong ho tro HLS.");
+    markError("Trình duyệt không hỗ trợ HLS.");
   }, [autoPlay, isLive, src]);
 
   function handleQualityChange(value: string) {
@@ -164,7 +164,7 @@ function HlsPlayerInner({
         {status === "loading" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 text-white">
             <Loader2 className="mb-3 size-9 animate-spin" />
-            <p className="font-semibold">Dang tai HLS...</p>
+            <p className="font-semibold">Đang tải HLS...</p>
           </div>
         )}
 
@@ -173,7 +173,7 @@ function HlsPlayerInner({
             <AlertCircle className="mb-3 size-10 text-[#ff7777]" />
             <p className="font-semibold">{error}</p>
             <p className="mt-2 max-w-md text-sm leading-6 text-white/70">
-              Kiem tra URL `.m3u8`, CORS cua Nginx va cac file `.ts` trong
+              Kiểm tra URL `.m3u8`, CORS của Nginx và các file `.ts` trong
               DevTools Network.
             </p>
           </div>
@@ -202,7 +202,7 @@ function HlsPlayerInner({
         {qualityLevels.length > 1 && (
           <label className="flex items-center gap-2 text-sm">
             <Settings className="size-4 text-white/70" />
-            <span className="text-white/70">Quality</span>
+            <span className="text-white/70">Chất lượng</span>
             <select
               value={selectedQuality}
               onChange={(event) => handleQualityChange(event.target.value)}

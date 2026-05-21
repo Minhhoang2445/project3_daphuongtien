@@ -99,7 +99,7 @@ export async function apiRequest<T>(
     });
   } catch {
     throw new ApiClientError(
-      `Khong ket noi duoc API tai ${API_BASE_URL}`,
+      `Không kết nối được API tại ${API_BASE_URL}`,
       0,
       "NETWORK_ERROR"
     );

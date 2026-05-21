@@ -1,37 +1,37 @@
-# Project 3 Da Phuong Tien
+# Project 3 Đa Phương Tiện
 
-Frontend cho do an livestream mini Twitch.
+Frontend cho đồ án livestream Mini Twitch.
 
-## Chay local
+## Chạy local
 
 ```powershell
 npm install
 npm run dev
 ```
 
-Mo:
+Mở:
 
 ```text
 http://localhost:3000
 ```
 
-## Cau hinh moi truong
+## Cấu hình môi trường
 
-Copy `.env.example` thanh `.env.local`, roi sua URL backend:
+Copy `.env.example` thành `.env.local`, rồi sửa URL backend:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
 NEXT_PUBLIC_WS_URL=ws://localhost:8080
 ```
 
-## Pham vi thanh vien 2
+## Phạm vi thành viên 2
 
-- Home page: live streams va VOD noi bat.
-- Login/register bang JWT.
-- Live page phat HLS bang `hls.js`.
-- Dashboard streamer: RTMP URL, stream key, HLS URL.
+- Home page: live streams và VOD nổi bật.
+- Login/register bằng JWT.
+- Live page phát HLS bằng `hls.js`.
+- Dashboard streamer: RTMP URL, Stream Key, HLS URL.
 - VOD list/detail.
 - Chat UI.
 - Guide OBS/Larix.
 
-Folder `pull/streamix` chi dung de tham khao, khong code truc tiep vao do.
+Folder `pull/streamix` chỉ dùng để tham khảo, không code trực tiếp vào đó.

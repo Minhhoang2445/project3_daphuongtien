@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
-  AlertCircle,
   BookOpen,
   CheckCircle2,
   ClipboardCheck,
@@ -17,6 +16,7 @@ import {
 import { useAuth } from "@/components/auth-provider";
 import { CopyButton } from "@/components/copy-button";
 import { SiteHeader } from "@/components/site-header";
+import { StateNotice } from "@/components/state-feedback";
 import { getStreamKeyRequest } from "@/lib/dashboard-api";
 import type { StreamConnection } from "@/types/dashboard";
 
@@ -54,7 +54,7 @@ export function GuidePageClient() {
         connection: mockGuideConnection,
         mode: "guest",
         notice:
-          "Dang dung cau hinh mau. Dang nhap tai khoan STREAMER de lay stream key that tu dashboard.",
+          "Đang dùng cấu hình mẫu. Đăng nhập tài khoản STREAMER để lấy Stream Key thật từ dashboard.",
       };
     }
 
@@ -73,7 +73,7 @@ export function GuidePageClient() {
         notice:
           requestError instanceof Error
             ? requestError.message
-            : "Backend chua san sang, dang hien thi cau hinh mau",
+            : "Backend chưa sẵn sàng, đang hiển thị cấu hình mẫu",
       };
     }
   }, [user]);
@@ -107,7 +107,7 @@ export function GuidePageClient() {
 
   return (
     <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
-      <SiteHeader subtitle="OBS and Larix guide" />
+      <SiteHeader subtitle="Guide OBS và Larix" />
 
       <section className="border-b border-[#dde1e7] bg-white">
         <div className="mx-auto max-w-6xl px-5 py-8">
@@ -117,11 +117,11 @@ export function GuidePageClient() {
                 Stream setup guide
               </p>
               <h1 className="text-3xl font-bold tracking-normal">
-                Huong dan OBS va Larix
+                Hướng dẫn OBS và Larix
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#596273]">
-                Cau hinh thiet bi day RTMP len server, sau do frontend xem qua
-                HLS URL tren live page.
+                Cấu hình thiết bị đẩy RTMP lên server, sau đó frontend xem qua
+                HLS URL trên live page.
               </p>
             </div>
 
@@ -131,7 +131,7 @@ export function GuidePageClient() {
               className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
             >
               <RefreshCw className="size-4" />
-              Refresh
+              Làm mới
             </button>
           </div>
         </div>
@@ -165,20 +165,15 @@ function GuideContent({
   return (
     <>
       {showNotice && (
-        <div className="flex items-start gap-3 rounded-md border border-[#f1c27a] bg-[#fff8ec] p-4 text-sm text-[#7a4a12]">
-          <AlertCircle className="mt-0.5 size-4 flex-none" />
-          <div>
-            <p className="font-semibold">
-              {state.mode === "guest"
-                ? "Dang hien thi cau hinh mau"
-                : "Dang hien thi guide mau"}
-            </p>
-            <p className="mt-1 leading-6">
-              {state.notice}. Khi backend va token san sang, trang nay se lay du
-              lieu that tu `GET /stream-key`.
-            </p>
-          </div>
-        </div>
+        <StateNotice
+          tone="warning"
+          title={
+            state.mode === "guest"
+              ? "Đang hiển thị cấu hình mẫu"
+              : "Đang hiển thị guide mẫu"
+          }
+          message={`${state.notice}. Khi backend và token sẵn sàng, trang này sẽ lấy dữ liệu thật từ GET /stream-key.`}
+        />
       )}
 
       <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
@@ -186,7 +181,7 @@ function GuideContent({
           <div className="mb-5 flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
               <BookOpen className="size-5 text-[#16803c]" />
-              <h2 className="text-lg font-semibold">Thong tin stream</h2>
+              <h2 className="text-lg font-semibold">Thông tin stream</h2>
             </div>
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-bold ${
@@ -233,11 +228,11 @@ function GuideContent({
 
           <StepList
             steps={[
-              "Mo OBS > Settings > Stream.",
+              "Mở OBS > Settings > Stream.",
               "Service: Custom.",
               "Server: paste RTMP Server.",
               "Stream Key: paste Stream Key.",
-              "Bam Start Streaming, doi backend cap nhat status LIVE.",
+              "Bấm Start Streaming, đợi backend cập nhật status LIVE.",
             ]}
           />
         </div>
@@ -252,11 +247,11 @@ function GuideContent({
 
           <StepList
             steps={[
-              "Mo Larix > Connections > New connection.",
+              "Mở Larix > Connections > New connection.",
               "Name: Mini Twitch.",
               `URL: ${larixUrl}.`,
               "Mode: Audio + Video.",
-              "Luu connection va bam Start broadcast.",
+              "Lưu connection và bấm Start broadcast.",
             ]}
           />
         </div>
@@ -264,7 +259,7 @@ function GuideContent({
         <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
           <div className="mb-5 flex items-center gap-3">
             <ClipboardCheck className="size-5 text-[#16803c]" />
-            <h2 className="text-lg font-semibold">Output settings</h2>
+            <h2 className="text-lg font-semibold">Cài đặt đầu ra</h2>
           </div>
 
           <div className="grid gap-2">
@@ -286,27 +281,27 @@ function GuideContent({
       <section className="rounded-lg border border-[#dde1e7] bg-white p-6">
         <div className="mb-5 flex items-center gap-3">
           <Wrench className="size-5 text-[#e12828]" />
-          <h2 className="text-lg font-semibold">Kiem tra khi demo</h2>
+          <h2 className="text-lg font-semibold">Kiểm tra khi demo</h2>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <CheckItem>Mo HLS URL tren browser, `.m3u8` phai tra ve 200.</CheckItem>
+          <CheckItem>Mở HLS URL trên browser, `.m3u8` phải trả về 200.</CheckItem>
           <CheckItem>
-            Trong live page, player load duoc playlist va segment `.ts`.
+            Trong live page, player load được playlist và segment `.ts`.
           </CheckItem>
           <CheckItem>
-            Neu chay web bang HTTP, HLS URL cung nen dung HTTP de tranh mixed
+            Nếu chạy web bằng HTTP, HLS URL cũng nên dùng HTTP để tránh mixed
             content.
           </CheckItem>
           <CheckItem>
-            Nginx can bat CORS cho `.m3u8` va `.ts` neu frontend khac domain.
+            Nginx cần bật CORS cho `.m3u8` và `.ts` nếu frontend khác domain.
           </CheckItem>
           <CheckItem>
-            HLS live co latency 5-20 giay, nen doi mot chut truoc khi ket luan
-            stream loi.
+            HLS live có latency 5-20 giây, nên đợi một chút trước khi kết luận
+            stream lỗi.
           </CheckItem>
           <CheckItem>
-            Sau khi OBS/Larix dung, vao `/live/username` de chup minh chung.
+            Sau khi OBS/Larix đúng, vào `/live/username` để chụp minh chứng.
           </CheckItem>
         </div>
       </section>

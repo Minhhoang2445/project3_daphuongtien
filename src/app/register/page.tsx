@@ -4,11 +4,11 @@ import { RegisterForm } from "@/components/register-form";
 export default function RegisterPage() {
   return (
     <AuthCard
-      title="Dang ky"
-      description="Tao tai khoan viewer hoac streamer theo dung API trong project plan."
-      switchText="Da co tai khoan?"
+      title="Đăng ký"
+      description="Tạo tài khoản viewer hoặc streamer theo đúng API trong project plan."
+      switchText="Đã có tài khoản?"
       switchHref="/login"
-      switchLabel="Dang nhap"
+      switchLabel="Đăng nhập"
     >
       <RegisterForm />
     </AuthCard>

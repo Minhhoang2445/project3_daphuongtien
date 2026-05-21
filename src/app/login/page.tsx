@@ -4,11 +4,11 @@ import { LoginForm } from "@/components/login-form";
 export default function LoginPage() {
   return (
     <AuthCard
-      title="Dang nhap"
-      description="Dang nhap de lay dashboard streamer, stream key va gui token vao cac API can bao ve."
-      switchText="Chua co tai khoan?"
+      title="Đăng nhập"
+      description="Đăng nhập để lấy dashboard streamer, Stream Key và gửi token vào các API cần bảo vệ."
+      switchText="Chưa có tài khoản?"
       switchHref="/register"
-      switchLabel="Dang ky"
+      switchLabel="Đăng ký"
     >
       <LoginForm />
     </AuthCard>

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import {
-  AlertCircle,
   CalendarDays,
   Clock3,
   Filter,
@@ -13,6 +12,11 @@ import {
   Video,
 } from "lucide-react";
 
+import {
+  EmptyState,
+  LoadingCardGrid,
+  StateNotice,
+} from "@/components/state-feedback";
 import { getVideosRequest } from "@/lib/videos-api";
 import { mockVideos } from "@/lib/mock-data";
 import type { VideoType, VodVideo } from "@/types/media";
@@ -59,7 +63,7 @@ export function VideosPageClient() {
         message:
           error instanceof Error
             ? error.message
-            : "Backend chua san sang, dang hien thi mock VOD",
+            : "Backend chưa sẵn sàng, đang hiển thị mock VOD",
       };
     }
   }
@@ -115,10 +119,10 @@ export function VideosPageClient() {
                 VOD library
               </p>
               <h1 className="text-3xl font-bold tracking-normal">
-                Danh sach video da luu
+                Danh sách video đã lưu
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#596273]">
-                Trang nay goi `GET /videos`, loc VOD/record va mo chi tiet bang
+                Trang này gọi `GET /videos`, lọc VOD/record và mở chi tiết bằng
                 HLS player chung.
               </p>
             </div>
@@ -129,20 +133,19 @@ export function VideosPageClient() {
               className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
             >
               <RefreshCw className="size-4" />
-              Refresh
+              Làm mới
             </button>
           </div>
 
           {isMock && (
-            <div className="mt-6 flex items-start gap-3 rounded-md border border-[#f1c27a] bg-[#fff8ec] p-4 text-sm text-[#7a4a12]">
-              <AlertCircle className="mt-0.5 size-4 flex-none" />
-              <div>
-                <p className="font-semibold">Dang hien thi mock VOD</p>
-                <p className="mt-1 leading-6">
-                  {state.message}. Khi backend tra ve du lieu that, danh sach
-                  nay se tu cap nhat theo API.
-                </p>
-              </div>
+            <div className="mt-6">
+              <StateNotice
+                tone="warning"
+                title="Đang hiển thị mock VOD"
+                message={`${state.message}. Khi backend trả về dữ liệu thật, danh sách này sẽ tự cập nhật theo API.`}
+                actionLabel="Thử lại API"
+                onAction={() => void loadVideos()}
+              />
             </div>
           )}
         </div>
@@ -155,7 +158,7 @@ export function VideosPageClient() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tim theo title, streamer, mo ta..."
+              placeholder="Tìm theo title, streamer, mô tả..."
               className="h-11 w-full rounded-md border border-[#ccd3dd] bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
             />
           </label>
@@ -273,38 +276,20 @@ function VideoThumbnail({ video }: { video: VodVideo }) {
 }
 
 function VideosSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {[0, 1, 2, 3, 4, 5].map((item) => (
-        <div
-          key={item}
-          className="overflow-hidden rounded-lg border border-[#dde1e7] bg-white"
-        >
-          <div className="aspect-video animate-pulse bg-[#d8dee8]" />
-          <div className="space-y-3 p-4">
-            <div className="h-5 w-3/4 animate-pulse rounded bg-[#e5e9ef]" />
-            <div className="h-4 w-1/2 animate-pulse rounded bg-[#e5e9ef]" />
-            <div className="h-4 w-full animate-pulse rounded bg-[#e5e9ef]" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <LoadingCardGrid count={6} />;
 }
 
 function EmptyVideos({ hasSourceData }: { hasSourceData: boolean }) {
   return (
-    <div className="rounded-lg border border-[#dde1e7] bg-white p-8 text-center">
-      <Video className="mx-auto mb-4 size-10 text-[#8a94a4]" />
-      <h2 className="text-lg font-semibold">
-        {hasSourceData ? "Khong tim thay VOD phu hop" : "Chua co VOD"}
-      </h2>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#596273]">
-        {hasSourceData
-          ? "Thu doi tu khoa hoac bo loc de xem lai danh sach video."
-          : "Khi backend co video da record hoac VOD HLS, danh sach se hien tai day."}
-      </p>
-    </div>
+    <EmptyState
+      icon={<Video className="size-6" />}
+      title={hasSourceData ? "Không tìm thấy VOD phù hợp" : "Chưa có VOD"}
+      message={
+        hasSourceData
+          ? "Thử đổi từ khóa hoặc bộ lọc để xem lại danh sách video."
+          : "Khi backend có video đã record hoặc VOD HLS, danh sách sẽ hiện tại đây."
+      }
+    />
   );
 }
 
@@ -325,11 +310,11 @@ function formatDuration(seconds?: number | null) {
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return "No date";
+  if (!value) return "Chưa có ngày";
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "No date";
+  if (Number.isNaN(date.getTime())) return "Chưa có ngày";
 
   return date.toLocaleDateString("vi-VN", {
     day: "2-digit",

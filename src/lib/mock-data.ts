@@ -8,8 +8,8 @@ export const sampleHlsUrl =
 export const mockLiveStreams: LiveStream[] = [
   {
     id: 10,
-    title: "Demo livestream he thong mini Twitch",
-    description: "OBS dang day RTMP len VPS Nginx RTMP va frontend phat HLS.",
+    title: "Demo livestream hệ thống Mini Twitch",
+    description: "OBS đang đẩy RTMP lên VPS Nginx RTMP và frontend phát HLS.",
     status: "LIVE",
     hlsUrl: sampleHlsUrl,
     thumbnailUrl: null,
@@ -23,8 +23,8 @@ export const mockLiveStreams: LiveStream[] = [
   },
   {
     id: 11,
-    title: "Mobile camera test bang Larix",
-    description: "Kiem tra latency HLS va chat UI tren live page.",
+    title: "Test camera mobile bằng Larix",
+    description: "Kiểm tra latency HLS và chat UI trên live page.",
     status: "LIVE",
     hlsUrl: sampleHlsUrl,
     thumbnailUrl: null,
@@ -41,8 +41,8 @@ export const mockLiveStreams: LiveStream[] = [
 export const mockVideos: VodVideo[] = [
   {
     id: 1,
-    title: "Livestream demo ngay 20/05",
-    description: "Ban ghi lai livestream OBS.",
+    title: "Livestream demo ngày 20/05",
+    description: "Bản ghi lại livestream OBS.",
     type: "RECORD",
     hlsUrl: sampleHlsUrl,
     thumbnailUrl: null,
@@ -57,7 +57,7 @@ export const mockVideos: VodVideo[] = [
   {
     id: 2,
     title: "Video demo VOD HLS",
-    description: "Video mau duoc convert bang FFmpeg sang HLS.",
+    description: "Video mẫu được convert bằng FFmpeg sang HLS.",
     type: "VOD",
     hlsUrl: sampleHlsUrl,
     thumbnailUrl: null,
@@ -72,7 +72,7 @@ export const mockVideos: VodVideo[] = [
   {
     id: 3,
     title: "Adaptive playlist 360p 480p 720p",
-    description: "Master playlist dung de test quality selector.",
+    description: "Master playlist dùng để test quality selector.",
     type: "VOD",
     hlsUrl: sampleHlsUrl,
     thumbnailUrl: null,
@@ -90,7 +90,7 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: 1,
     streamId: 10,
-    message: "Live muot qua",
+    message: "Live mượt quá",
     createdAt: "2026-05-20T22:55:00Z",
     user: {
       id: 2,
@@ -101,7 +101,7 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: 2,
     streamId: 10,
-    message: "Dang xem HLS tren web frontend",
+    message: "Đang xem HLS trên web frontend",
     createdAt: "2026-05-20T22:56:00Z",
     user: {
       id: 3,
@@ -112,7 +112,7 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: 3,
     streamId: 10,
-    message: "Chat UI san sang cho buoc WebSocket",
+    message: "Chat UI sẵn sàng cho bước WebSocket",
     createdAt: "2026-05-20T22:57:00Z",
     user: {
       id: 1,

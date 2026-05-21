@@ -29,7 +29,7 @@ export function AuthCard({
           <span>
             <span className="block text-base font-semibold">Mini Twitch</span>
             <span className="block text-xs text-[#697282]">
-              Frontend workspace
+              Không gian frontend
             </span>
           </span>
         </Link>

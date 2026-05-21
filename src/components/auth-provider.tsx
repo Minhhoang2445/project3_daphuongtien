@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Khong the lay thong tin tai khoan"
+          : "Không thể lấy thông tin tài khoản"
       );
     }
   }, []);
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setError(
             requestError instanceof Error
               ? requestError.message
-              : "Khong the lay thong tin tai khoan"
+              : "Không thể lấy thông tin tài khoản"
           );
         }
       }

@@ -26,7 +26,7 @@ export function LoginForm() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Dang nhap that bai"
+          : "Đăng nhập thất bại"
       );
     } finally {
       setIsSubmitting(false);
@@ -56,7 +56,7 @@ export function LoginForm() {
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Password</span>
+        <span className="text-sm font-medium text-[#2f3745]">Mật khẩu</span>
         <input
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -78,7 +78,7 @@ export function LoginForm() {
         ) : (
           <LogIn className="size-4" />
         )}
-        Dang nhap
+        Đăng nhập
       </button>
     </form>
   );

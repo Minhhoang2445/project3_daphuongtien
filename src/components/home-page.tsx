@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
-  AlertCircle,
   CalendarDays,
   Clock3,
   Eye,
@@ -13,6 +12,11 @@ import {
   Video,
 } from "lucide-react";
 
+import {
+  EmptyState,
+  LoadingCardGrid,
+  StateNotice,
+} from "@/components/state-feedback";
 import {
   getLiveStreamsRequest,
   getVideosRequest,
@@ -60,7 +64,7 @@ export function HomePage() {
         message:
           error instanceof Error
             ? error.message
-            : "Backend chua san sang, dang hien thi mock data",
+            : "Backend chưa sẵn sàng, đang hiển thị mock data",
       };
     }
   }
@@ -103,11 +107,11 @@ export function HomePage() {
                 Home page
               </p>
               <h1 className="text-3xl font-bold tracking-normal">
-                Live streams va VOD noi bat
+                Live streams và VOD nổi bật
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#596273]">
-                Trang chu goi API public theo project plan: `GET
-                /streams/live` va `GET /videos`.
+                Trang chủ gọi API public theo project plan: `GET
+                /streams/live` và `GET /videos`.
               </p>
             </div>
 
@@ -117,20 +121,19 @@ export function HomePage() {
               className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
             >
               <RefreshCw className="size-4" />
-              Refresh
+              Làm mới
             </button>
           </div>
 
           {isMock && (
-            <div className="mt-6 flex items-start gap-3 rounded-md border border-[#f1c27a] bg-[#fff8ec] p-4 text-sm text-[#7a4a12]">
-              <AlertCircle className="mt-0.5 size-4 flex-none" />
-              <div>
-                <p className="font-semibold">Dang hien thi mock data</p>
-                <p className="mt-1 leading-6">
-                  {state.message}. Khi backend chay dung URL trong `.env`, trang
-                  nay se tu hien du lieu API that.
-                </p>
-              </div>
+            <div className="mt-6">
+              <StateNotice
+                tone="warning"
+                title="Đang hiển thị mock data"
+                message={`${state.message}. Khi backend chạy đúng URL trong .env, trang này sẽ tự hiện dữ liệu API thật.`}
+                actionLabel="Thử lại API"
+                onAction={() => void loadHomeData()}
+              />
             </div>
           )}
         </div>
@@ -144,9 +147,9 @@ export function HomePage() {
         ) : (
           <>
             <HomeSection
-              title="Dang live"
+              title="Đang live"
               count={state.streams.length}
-              emptyText="Chua co stream nao dang live."
+              emptyText="Chưa có stream nào đang live."
             >
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {state.streams.map((stream) => (
@@ -156,11 +159,11 @@ export function HomePage() {
             </HomeSection>
 
             <HomeSection
-              title="VOD noi bat"
+              title="VOD nổi bật"
               count={state.videos.length}
-              emptyText="Chua co VOD nao."
+              emptyText="Chưa có VOD nào."
               actionHref="/videos"
-              actionLabel="Xem tat ca"
+              actionLabel="Xem tất cả"
             >
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {state.videos.map((video) => (
@@ -308,7 +311,7 @@ function VodCard({ video }: { video: VodVideo }) {
             </span>
             <span className="inline-flex items-center gap-1">
               <CalendarDays className="size-3.5" />
-              {formatRelativeDate(video.createdAt) ?? "No date"}
+              {formatRelativeDate(video.createdAt) ?? "Chưa có ngày"}
             </span>
           </div>
         </div>
@@ -372,21 +375,7 @@ function HomeSkeleton() {
       {[0, 1].map((section) => (
         <section key={section}>
           <div className="mb-4 h-7 w-36 animate-pulse rounded-md bg-[#dde1e7]" />
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {[0, 1, 2].map((card) => (
-              <div
-                key={card}
-                className="overflow-hidden rounded-lg border border-[#dde1e7] bg-white"
-              >
-                <div className="aspect-video animate-pulse bg-[#d8dee8]" />
-                <div className="space-y-3 p-4">
-                  <div className="h-5 w-3/4 animate-pulse rounded bg-[#e5e9ef]" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-[#e5e9ef]" />
-                  <div className="h-4 w-full animate-pulse rounded bg-[#e5e9ef]" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <LoadingCardGrid count={3} />
         </section>
       ))}
     </div>
@@ -395,14 +384,11 @@ function HomeSkeleton() {
 
 function EmptyHome() {
   return (
-    <div className="rounded-lg border border-[#dde1e7] bg-white p-8 text-center">
-      <Radio className="mx-auto mb-4 size-10 text-[#8a94a4]" />
-      <h2 className="text-lg font-semibold">Chua co du lieu hien thi</h2>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#596273]">
-        Backend tra ve danh sach rong cho ca live stream va VOD. Khi co streamer
-        live hoac VOD duoc tao, card se hien tai day.
-      </p>
-    </div>
+    <EmptyState
+      icon={<Radio className="size-6" />}
+      title="Chưa có dữ liệu hiển thị"
+      message="Backend trả về danh sách rỗng cho cả live stream và VOD. Khi có streamer live hoặc VOD được tạo, card sẽ hiện tại đây."
+    />
   );
 }
 

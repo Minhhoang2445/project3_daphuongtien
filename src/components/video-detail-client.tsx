@@ -17,6 +17,7 @@ import {
 import { CopyButton } from "@/components/copy-button";
 import { HlsPlayer } from "@/components/hls-player";
 import { SiteHeader } from "@/components/site-header";
+import { StateNotice } from "@/components/state-feedback";
 import { getVideoRequest } from "@/lib/videos-api";
 import { mockVideos, sampleHlsUrl } from "@/lib/mock-data";
 import type { VodVideo } from "@/types/media";
@@ -58,7 +59,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
           message:
             error instanceof Error
               ? error.message
-              : "Khong tai duoc chi tiet VOD",
+              : "Không tải được chi tiết VOD",
         };
       }
 
@@ -68,7 +69,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
         message:
           error instanceof Error
             ? error.message
-            : "Backend chua san sang, dang hien thi mock VOD",
+            : "Backend chưa sẵn sàng, đang hiển thị mock VOD",
       };
     }
   }, [videoId]);
@@ -111,7 +112,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
             className="inline-flex h-10 items-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
           >
             <ArrowLeft className="size-4" />
-            VOD list
+            Danh sách VOD
           </Link>
 
           <button
@@ -120,7 +121,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
           >
             <RefreshCw className="size-4" />
-            Refresh
+            Làm mới
           </button>
         </div>
 
@@ -131,16 +132,13 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
         ) : (
           <div className="space-y-6">
             {isMock && (
-              <div className="flex items-start gap-3 rounded-md border border-[#f1c27a] bg-[#fff8ec] p-4 text-sm text-[#7a4a12]">
-                <AlertCircle className="mt-0.5 size-4 flex-none" />
-                <div>
-                  <p className="font-semibold">Dang hien thi mock VOD</p>
-                  <p className="mt-1 leading-6">
-                    {state.message}. Khi backend tra ve `GET /videos/:id`, page
-                    nay se phat dung `video.hlsUrl` that.
-                  </p>
-                </div>
-              </div>
+              <StateNotice
+                tone="warning"
+                title="Đang hiển thị mock VOD"
+                message={`${state.message}. Khi backend trả về GET /videos/:id, page này sẽ phát đúng video.hlsUrl thật.`}
+                actionLabel="Thử lại API"
+                onAction={() => void loadVideo()}
+              />
             )}
 
             <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -158,7 +156,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                     <div className="min-w-0">
                       <p className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase text-[#e12828]">
                         <Play className="size-4 fill-current" />
-                        HLS VOD player
+                        Trình phát HLS VOD
                       </p>
                       <h1 className="text-2xl font-bold tracking-normal">
                         {state.video.title}
@@ -182,12 +180,12 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                     />
                     <InfoItem
                       icon={<Clock3 className="size-4" />}
-                      label="Duration"
+                      label="Thời lượng"
                       value={formatDuration(state.video.duration)}
                     />
                     <InfoItem
                       icon={<CalendarDays className="size-4" />}
-                      label="Created"
+                      label="Ngày tạo"
                       value={formatDate(state.video.createdAt)}
                     />
                   </div>
@@ -198,7 +196,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                 <section className="rounded-lg border border-[#dde1e7] bg-white p-5">
                   <div className="mb-4 flex items-center gap-2">
                     <Film className="size-5 text-[#e12828]" />
-                    <h2 className="font-bold">Nguon phat</h2>
+                    <h2 className="font-bold">Nguồn phát</h2>
                   </div>
 
                   <div className="space-y-3">
@@ -211,7 +209,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                       </p>
                     </div>
 
-                    <CopyButton value={hlsUrl} label="Copy HLS" />
+                    <CopyButton value={hlsUrl} label="Sao chép HLS" />
                   </div>
                 </section>
 
@@ -221,8 +219,8 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                     <h2 className="font-bold">Adaptive HLS</h2>
                   </div>
                   <p className="text-sm leading-6 text-[#596273]">
-                    Neu URL la master playlist 360p/480p/720p, player se hien
-                    quality selector sau khi doc manifest.
+                    Nếu URL là master playlist 360p/480p/720p, player sẽ hiện
+                    quality selector sau khi đọc manifest.
                   </p>
                 </section>
               </aside>
@@ -274,9 +272,9 @@ function VideoDetailError({ message }: { message: string | null }) {
   return (
     <div className="rounded-lg border border-[#dde1e7] bg-white p-8 text-center">
       <AlertCircle className="mx-auto mb-4 size-10 text-[#e12828]" />
-      <h1 className="text-lg font-semibold">Khong tai duoc VOD</h1>
+      <h1 className="text-lg font-semibold">Không tải được VOD</h1>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#596273]">
-        {message || "Backend khong tra ve video nay va khong co mock fallback."}
+        {message || "Backend không trả về video này và không có mock fallback."}
       </p>
     </div>
   );
@@ -299,11 +297,11 @@ function formatDuration(seconds?: number | null) {
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return "No date";
+  if (!value) return "Chưa có ngày";
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "No date";
+  if (Number.isNaN(date.getTime())) return "Chưa có ngày";
 
   return date.toLocaleDateString("vi-VN", {
     day: "2-digit",

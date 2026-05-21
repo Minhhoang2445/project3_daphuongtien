@@ -11,12 +11,12 @@ const roles: Array<{ value: UserRole; label: string; detail: string }> = [
   {
     value: "VIEWER",
     label: "Viewer",
-    detail: "Tai khoan xem live va chat.",
+    detail: "Tài khoản xem live và chat.",
   },
   {
     value: "STREAMER",
     label: "Streamer",
-    detail: "Tai khoan demo lay stream key.",
+    detail: "Tài khoản demo lấy Stream Key.",
   },
 ];
 
@@ -40,12 +40,12 @@ export function RegisterForm() {
       const data = await register({ username, email, password, role });
       setSuccess(
         data.accessToken
-          ? "Dang ky thanh cong va da dang nhap."
-          : "Dang ky thanh cong. Hay dang nhap bang tai khoan vua tao."
+          ? "Đăng ký thành công và đã đăng nhập."
+          : "Đăng ký thành công. Hãy đăng nhập bằng tài khoản vừa tạo."
       );
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Dang ky that bai"
+        requestError instanceof Error ? requestError.message : "Đăng ký thất bại"
       );
     } finally {
       setIsSubmitting(false);
@@ -71,7 +71,7 @@ export function RegisterForm() {
                 href="/login"
                 className="mt-2 inline-block font-semibold text-[#17653a] underline"
               >
-                Di den trang dang nhap
+                Đi đến trang đăng nhập
               </Link>
             </div>
           </div>
@@ -79,7 +79,7 @@ export function RegisterForm() {
       )}
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Username</span>
+        <span className="text-sm font-medium text-[#2f3745]">Tên người dùng</span>
         <input
           value={username}
           onChange={(event) => setUsername(event.target.value)}
@@ -104,7 +104,7 @@ export function RegisterForm() {
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Password</span>
+        <span className="text-sm font-medium text-[#2f3745]">Mật khẩu</span>
         <input
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -112,13 +112,13 @@ export function RegisterForm() {
           minLength={8}
           required
           autoComplete="new-password"
-          placeholder="It nhat 8 ky tu"
+          placeholder="Ít nhất 8 ký tự"
           className="mt-2 h-11 w-full rounded-md border border-[#ccd3dd] bg-white px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
         />
       </label>
 
       <fieldset>
-        <legend className="text-sm font-medium text-[#2f3745]">Role</legend>
+        <legend className="text-sm font-medium text-[#2f3745]">Vai trò</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {roles.map((item) => (
             <label
@@ -158,7 +158,7 @@ export function RegisterForm() {
         ) : (
           <UserPlus className="size-4" />
         )}
-        Dang ky
+        Đăng ký
       </button>
     </form>
   );
