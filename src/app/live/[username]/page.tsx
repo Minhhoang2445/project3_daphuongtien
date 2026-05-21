@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { MessageSquareText, Radio, Video } from "lucide-react";
+import { MessageSquareText, Radio } from "lucide-react";
 
+import { HlsPlayer } from "@/components/hls-player";
 import { SiteHeader } from "@/components/site-header";
+import { mockLiveStreams, sampleHlsUrl } from "@/lib/mock-data";
 
 type LivePageProps = {
   params: Promise<{
@@ -11,6 +13,10 @@ type LivePageProps = {
 
 export default async function LivePage({ params }: LivePageProps) {
   const { username } = await params;
+  const stream =
+    mockLiveStreams.find((item) => item.streamer.username === username) ||
+    mockLiveStreams[0];
+  const hlsUrl = stream?.hlsUrl || sampleHlsUrl;
 
   return (
     <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
@@ -24,23 +30,26 @@ export default async function LivePage({ params }: LivePageProps) {
             </span>
             <div>
               <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-[#e12828]">
-                Placeholder route
+                HLS live player
               </p>
-              <h1 className="text-2xl font-bold">Live page cua @{username}</h1>
+              <h1 className="text-2xl font-bold">
+                {stream?.title || `Live page cua @${username}`}
+              </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[#596273]">
-                Route nay da san sang de buoc sau gan `GET /streams/:username`,
-                HLS player va chat realtime.
+                Dang dung HLS player chung bang `hls.js`. Khi backend co `GET
+                /streams/:username`, page nay se dua `stream.hlsUrl` vao player.
               </p>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-[1.5fr_0.8fr]">
-            <div className="flex aspect-video items-center justify-center rounded-lg bg-[#202530] text-white">
-              <div className="text-center">
-                <Video className="mx-auto mb-3 size-10" />
-                <p className="font-semibold">HLS player se nam o day</p>
-              </div>
-            </div>
+            <HlsPlayer
+              src={hlsUrl}
+              title={stream?.title || `Live @${username}`}
+              poster={stream?.thumbnailUrl}
+              isLive
+              muted
+            />
             <div className="rounded-lg border border-[#dde1e7] bg-[#fafbfc] p-4">
               <MessageSquareText className="mb-3 size-6 text-[#e12828]" />
               <h2 className="font-semibold">Chat UI</h2>
@@ -48,6 +57,10 @@ export default async function LivePage({ params }: LivePageProps) {
                 Phan chat se dung history API va WebSocket event trong project
                 plan.
               </p>
+              <div className="mt-4 rounded-md bg-white p-3 text-xs leading-5 text-[#596273]">
+                <p className="font-semibold text-[#14171f]">Stream URL dang test</p>
+                <p className="mt-1 break-all font-mono">{hlsUrl}</p>
+              </div>
             </div>
           </div>
 
