@@ -26,37 +26,32 @@ export function DashboardAuthPanel() {
   if (!user) {
     return (
       <div className="space-y-5">
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
-          <LockKeyhole className="mb-4 size-8 text-[#e12828]" />
-          <h1 className="text-2xl font-bold">Cần đăng nhập</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#596273]">
-            Dashboard streamer cần JWT token để gọi API lấy RTMP URL và Stream
-            Key. Hãy đăng nhập bằng tài khoản role STREAMER.
+        <div className="surface-panel rounded-2xl p-6">
+          <LockKeyhole className="mb-4 size-9 text-red-600" />
+          <h1 className="text-2xl font-extrabold text-slate-950">
+            Cần đăng nhập
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            Dashboard streamer cần JWT token để lấy RTMP URL, Stream Key và cập
+            nhật thông tin buổi live.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link
-              href="/login"
-              className="rounded-md bg-[#e12828] px-4 py-2 text-sm font-semibold text-white hover:bg-[#bf2222]"
-            >
+            <Link href="/login" className="btn btn-primary">
               Đăng nhập
             </Link>
-            <Link
-              href="/register"
-              className="rounded-md border border-[#dde1e7] bg-white px-4 py-2 text-sm font-semibold text-[#4c5666] hover:bg-[#f6f7f9]"
-            >
+            <Link href="/register" className="btn btn-secondary">
               Đăng ký
             </Link>
           </div>
         </div>
 
-        <div className="rounded-lg border border-dashed border-[#ccd3dd] bg-[#fafbfc] p-4">
-          <p className="text-sm font-semibold text-[#3d4654]">
-            Preview giao diện dashboard khi backend/auth chưa sẵn sàng
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-4">
+          <p className="text-sm font-extrabold text-slate-700">
+            Preview dashboard
           </p>
-          <p className="mt-1 text-sm leading-6 text-[#697282]">
-            Khung dưới đây dùng mock data để bạn kiểm tra layout, nút sao chép,
-            regenerate key và form stream info. Khi đăng nhập thật, dashboard sẽ
-            dùng user/token của backend.
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Khung dưới đây dùng dữ liệu mẫu để kiểm tra layout, copy key,
+            regenerate key và form stream info.
           </p>
         </div>
 

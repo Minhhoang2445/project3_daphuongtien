@@ -55,21 +55,21 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="flex items-start gap-2 rounded-md border border-[#f1b4b4] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
+        <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-900">
           <AlertCircle className="mt-0.5 size-4 flex-none" />
           <p>{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="rounded-md border border-[#b7dfc4] bg-[#f1fbf4] p-3 text-sm text-[#17653a]">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
           <div className="flex items-start gap-2">
             <CheckCircle2 className="mt-0.5 size-4 flex-none" />
             <div>
               <p>{success}</p>
               <Link
                 href="/login"
-                className="mt-2 inline-block font-semibold text-[#17653a] underline"
+                className="mt-2 inline-block font-extrabold text-emerald-800 underline"
               >
                 Đi đến trang đăng nhập
               </Link>
@@ -79,19 +79,19 @@ export function RegisterForm() {
       )}
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Tên người dùng</span>
+        <span className="text-sm font-bold text-slate-700">Tên người dùng</span>
         <input
           value={username}
           onChange={(event) => setUsername(event.target.value)}
           required
           autoComplete="username"
           placeholder="minhhoang"
-          className="mt-2 h-11 w-full rounded-md border border-[#ccd3dd] bg-white px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
+          className="field mt-2"
         />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Email</span>
+        <span className="text-sm font-bold text-slate-700">Email</span>
         <input
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -99,12 +99,12 @@ export function RegisterForm() {
           required
           autoComplete="email"
           placeholder="minhhoang@example.com"
-          className="mt-2 h-11 w-full rounded-md border border-[#ccd3dd] bg-white px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
+          className="field mt-2"
         />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Mật khẩu</span>
+        <span className="text-sm font-bold text-slate-700">Mật khẩu</span>
         <input
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -113,20 +113,20 @@ export function RegisterForm() {
           required
           autoComplete="new-password"
           placeholder="Ít nhất 8 ký tự"
-          className="mt-2 h-11 w-full rounded-md border border-[#ccd3dd] bg-white px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
+          className="field mt-2"
         />
       </label>
 
       <fieldset>
-        <legend className="text-sm font-medium text-[#2f3745]">Vai trò</legend>
+        <legend className="text-sm font-bold text-slate-700">Vai trò</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {roles.map((item) => (
             <label
               key={item.value}
-              className={`cursor-pointer rounded-md border p-3 text-sm transition ${
+              className={`cursor-pointer rounded-xl border p-3 text-sm transition ${
                 role === item.value
-                  ? "border-[#e12828] bg-[#fff5f5]"
-                  : "border-[#dde1e7] bg-white hover:bg-[#f6f7f9]"
+                  ? "border-red-200 bg-red-50 text-red-950"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
               <input
@@ -137,10 +137,8 @@ export function RegisterForm() {
                 onChange={() => setRole(item.value)}
                 className="sr-only"
               />
-              <span className="block font-semibold text-[#14171f]">
-                {item.label}
-              </span>
-              <span className="mt-1 block text-xs leading-5 text-[#596273]">
+              <span className="block font-extrabold">{item.label}</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">
                 {item.detail}
               </span>
             </label>
@@ -148,11 +146,7 @@ export function RegisterForm() {
         </div>
       </fieldset>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#e12828] px-4 text-sm font-semibold text-white transition hover:bg-[#bf2222] disabled:cursor-not-allowed disabled:opacity-70"
-      >
+      <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
         {isSubmitting ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (

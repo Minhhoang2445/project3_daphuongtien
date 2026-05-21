@@ -18,12 +18,12 @@ export function CopyButton({ value, label = "Sao chép" }: CopyButtonProps) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#dde1e7] bg-white px-3 text-sm font-medium text-[#4c5666] hover:bg-[#f6f7f9]"
-    >
-      {copied ? <Check className="size-4 text-[#16803c]" /> : <Copy className="size-4" />}
+    <button type="button" onClick={handleCopy} className="btn btn-secondary min-h-9 px-3">
+      {copied ? (
+        <Check className="size-4 text-emerald-700" />
+      ) : (
+        <Copy className="size-4" />
+      )}
       {copied ? "Đã sao chép" : label}
     </button>
   );

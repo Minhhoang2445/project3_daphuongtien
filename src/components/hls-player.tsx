@@ -25,11 +25,11 @@ export function HlsPlayer(props: HlsPlayerProps) {
   if (!props.src) {
     return (
       <PlayerFrame>
-        <div className="flex h-full flex-col items-center justify-center text-center text-white">
+        <div className="flex h-full flex-col items-center justify-center px-5 text-center text-white">
           <Video className="mb-3 size-10 text-white/70" />
-          <p className="font-semibold">Chưa có HLS URL</p>
+          <p className="font-extrabold">Chưa có HLS URL</p>
           <p className="mt-1 text-sm text-white/70">
-            Backend cần trả về trường `hlsUrl`.
+            Backend cần trả về trường hlsUrl.
           </p>
         </div>
       </PlayerFrame>
@@ -150,7 +150,7 @@ function HlsPlayerInner({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[#202530] bg-[#202530]">
+    <div className="overflow-hidden rounded-2xl border border-slate-900 bg-slate-950 shadow-xl shadow-slate-950/10">
       <PlayerFrame>
         <video
           ref={videoRef}
@@ -162,39 +162,39 @@ function HlsPlayerInner({
         />
 
         {status === "loading" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white">
             <Loader2 className="mb-3 size-9 animate-spin" />
-            <p className="font-semibold">Đang tải HLS...</p>
+            <p className="font-extrabold">Đang tải HLS...</p>
           </div>
         )}
 
         {status === "error" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 px-5 text-center text-white">
-            <AlertCircle className="mb-3 size-10 text-[#ff7777]" />
-            <p className="font-semibold">{error}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 px-5 text-center text-white">
+            <AlertCircle className="mb-3 size-10 text-red-300" />
+            <p className="font-extrabold">{error}</p>
             <p className="mt-2 max-w-md text-sm leading-6 text-white/70">
-              Kiểm tra URL `.m3u8`, CORS của Nginx và các file `.ts` trong
-              DevTools Network.
+              Kiểm tra URL .m3u8, CORS của Nginx và các file segment trong
+              Network.
             </p>
           </div>
         )}
       </PlayerFrame>
 
-      <div className="flex flex-col gap-3 border-t border-white/10 bg-[#14171f] p-4 text-white sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-t border-white/10 bg-slate-950 p-4 text-white sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {isLive ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#e12828] px-2 py-1 text-xs font-bold">
+              <span className="badge badge-live">
                 <span className="size-1.5 rounded-full bg-white" />
                 LIVE
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-bold">
+              <span className="badge bg-white/10 text-white">
                 <Radio className="size-3.5" />
                 HLS
               </span>
             )}
-            <p className="truncate text-sm font-semibold">{title}</p>
+            <p className="truncate text-sm font-extrabold">{title}</p>
           </div>
           <p className="mt-1 truncate font-mono text-xs text-white/50">{src}</p>
         </div>
@@ -206,7 +206,7 @@ function HlsPlayerInner({
             <select
               value={selectedQuality}
               onChange={(event) => handleQualityChange(event.target.value)}
-              className="h-9 rounded-md border border-white/15 bg-[#202530] px-2 text-sm text-white outline-none"
+              className="h-9 rounded-lg border border-white/15 bg-slate-900 px-2 text-sm text-white outline-none"
             >
               <option value="-1">Auto</option>
               {qualityLevels.map((level) => (
@@ -226,9 +226,5 @@ function HlsPlayerInner({
 }
 
 function PlayerFrame({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative aspect-video overflow-hidden bg-black">
-      {children}
-    </div>
-  );
+  return <div className="relative aspect-video overflow-hidden bg-black">{children}</div>;
 }

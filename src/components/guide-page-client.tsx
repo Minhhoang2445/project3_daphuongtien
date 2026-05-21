@@ -54,7 +54,7 @@ export function GuidePageClient() {
         connection: mockGuideConnection,
         mode: "guest",
         notice:
-          "Đang dùng cấu hình mẫu. Đăng nhập tài khoản STREAMER để lấy Stream Key thật từ dashboard.",
+          "Đang dùng cấu hình mẫu. Đăng nhập tài khoản STREAMER để lấy Stream Key thật.",
       };
     }
 
@@ -106,30 +106,24 @@ export function GuidePageClient() {
   const isLoading = status === "loading" || !state;
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
+    <main className="app-page">
       <SiteHeader subtitle="Guide OBS và Larix" />
 
-      <section className="border-b border-[#dde1e7] bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <section className="page-hero">
+        <div className="app-container py-9">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="mb-2 text-sm font-semibold uppercase text-[#16803c]">
-                Hướng dẫn thiết lập stream
-              </p>
-              <h1 className="text-3xl font-bold tracking-normal">
+              <p className="eyebrow mb-2 text-emerald-700">Thiết lập stream</p>
+              <h1 className="text-3xl font-extrabold tracking-normal text-slate-950 sm:text-4xl">
                 Hướng dẫn OBS và Larix
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#596273]">
-                Cấu hình thiết bị đẩy RTMP lên server, sau đó frontend xem qua
-                HLS URL trên live page.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+                Cấu hình thiết bị đẩy RTMP lên server, sau đó xem bằng HLS trên
+                live page.
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => void refreshGuide()}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-            >
+            <button type="button" onClick={() => void refreshGuide()} className="btn btn-secondary">
               <RefreshCw className="size-4" />
               Làm mới
             </button>
@@ -137,7 +131,7 @@ export function GuidePageClient() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+      <section className="app-container space-y-6 py-8">
         {isLoading ? (
           <GuideSkeleton />
         ) : (
@@ -172,22 +166,24 @@ function GuideContent({
               ? "Đang hiển thị cấu hình mẫu"
               : "Đang hiển thị guide mẫu"
           }
-          message={`${state.notice}. Khi backend và token sẵn sàng, trang này sẽ lấy dữ liệu thật từ GET /stream-key.`}
+          message={`${state.notice}. Khi backend và token sẵn sàng, trang sẽ lấy dữ liệu thật.`}
         />
       )}
 
       <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
+        <div className="surface-panel rounded-2xl p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <BookOpen className="size-5 text-[#16803c]" />
-              <h2 className="text-lg font-semibold">Thông tin stream</h2>
+              <BookOpen className="size-5 text-emerald-700" />
+              <h2 className="text-lg font-extrabold text-slate-950">
+                Thông tin stream
+              </h2>
             </div>
             <span
-              className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+              className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
                 state.connection.status === "LIVE"
-                  ? "bg-[#e12828] text-white"
-                  : "bg-[#e8ebf0] text-[#596273]"
+                  ? "bg-red-600 text-white"
+                  : "bg-slate-200 text-slate-600"
               }`}
             >
               {state.connection.status}
@@ -202,28 +198,22 @@ function GuideContent({
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <Link
-              href="/dashboard"
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-[#14171f] px-4 text-sm font-semibold text-white hover:bg-[#2a303b]"
-            >
+            <Link href="/dashboard" className="btn btn-ink">
               <Settings className="size-4" />
               Dashboard
             </Link>
             {!isSignedIn && (
-              <Link
-                href="/login"
-                className="inline-flex h-10 items-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-              >
+              <Link href="/login" className="btn btn-secondary">
                 Login
               </Link>
             )}
           </div>
         </div>
 
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
+        <div className="surface-panel rounded-2xl p-6">
           <div className="mb-5 flex items-center gap-3">
-            <MonitorUp className="size-5 text-[#e12828]" />
-            <h2 className="text-lg font-semibold">OBS Studio</h2>
+            <MonitorUp className="size-5 text-red-600" />
+            <h2 className="text-lg font-extrabold text-slate-950">OBS Studio</h2>
           </div>
 
           <StepList
@@ -232,17 +222,19 @@ function GuideContent({
               "Service: Custom.",
               "Server: paste RTMP Server.",
               "Stream Key: paste Stream Key.",
-              "Bấm Start Streaming, đợi backend cập nhật status LIVE.",
+              "Bấm Start Streaming và đợi status chuyển LIVE.",
             ]}
           />
         </div>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[1fr_1fr]">
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
+        <div className="surface-panel rounded-2xl p-6">
           <div className="mb-5 flex items-center gap-3">
-            <Smartphone className="size-5 text-[#e12828]" />
-            <h2 className="text-lg font-semibold">Larix Broadcaster</h2>
+            <Smartphone className="size-5 text-red-600" />
+            <h2 className="text-lg font-extrabold text-slate-950">
+              Larix Broadcaster
+            </h2>
           </div>
 
           <StepList
@@ -256,20 +248,22 @@ function GuideContent({
           />
         </div>
 
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-6">
+        <div className="surface-panel rounded-2xl p-6">
           <div className="mb-5 flex items-center gap-3">
-            <ClipboardCheck className="size-5 text-[#16803c]" />
-            <h2 className="text-lg font-semibold">Cài đặt đầu ra</h2>
+            <ClipboardCheck className="size-5 text-emerald-700" />
+            <h2 className="text-lg font-extrabold text-slate-950">
+              Cài đặt đầu ra
+            </h2>
           </div>
 
           <div className="grid gap-2">
             {outputSettings.map(([label, value]) => (
               <div
                 key={label}
-                className="flex items-center justify-between gap-3 rounded-md bg-[#f6f7f9] px-3 py-2 text-sm"
+                className="soft-tile flex items-center justify-between gap-3 px-3 py-2 text-sm"
               >
-                <span className="font-medium text-[#3d4654]">{label}</span>
-                <span className="text-right font-semibold text-[#14171f]">
+                <span className="font-bold text-slate-600">{label}</span>
+                <span className="text-right font-extrabold text-slate-950">
                   {value}
                 </span>
               </div>
@@ -278,31 +272,21 @@ function GuideContent({
         </div>
       </section>
 
-      <section className="rounded-lg border border-[#dde1e7] bg-white p-6">
+      <section className="surface-panel rounded-2xl p-6">
         <div className="mb-5 flex items-center gap-3">
-          <Wrench className="size-5 text-[#e12828]" />
-          <h2 className="text-lg font-semibold">Kiểm tra khi demo</h2>
+          <Wrench className="size-5 text-red-600" />
+          <h2 className="text-lg font-extrabold text-slate-950">
+            Kiểm tra khi demo
+          </h2>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <CheckItem>Mở HLS URL trên browser, `.m3u8` phải trả về 200.</CheckItem>
-          <CheckItem>
-            Trong live page, player load được playlist và segment `.ts`.
-          </CheckItem>
-          <CheckItem>
-            Nếu chạy web bằng HTTP, HLS URL cũng nên dùng HTTP để tránh mixed
-            content.
-          </CheckItem>
-          <CheckItem>
-            Nginx cần bật CORS cho `.m3u8` và `.ts` nếu frontend khác domain.
-          </CheckItem>
-          <CheckItem>
-            HLS live có latency 5-20 giây, nên đợi một chút trước khi kết luận
-            stream lỗi.
-          </CheckItem>
-          <CheckItem>
-            Sau khi OBS/Larix đúng, vào `/live/username` để chụp minh chứng.
-          </CheckItem>
+          <CheckItem>Mở HLS URL trên browser, file .m3u8 trả về 200.</CheckItem>
+          <CheckItem>Trong live page, player load được playlist và segment.</CheckItem>
+          <CheckItem>Web HTTP nên dùng HLS HTTP để tránh mixed content.</CheckItem>
+          <CheckItem>Nginx bật CORS cho .m3u8 và segment nếu khác domain.</CheckItem>
+          <CheckItem>HLS live thường có latency 5-20 giây.</CheckItem>
+          <CheckItem>Vào /live/username để chụp minh chứng sau khi stream chạy.</CheckItem>
         </div>
       </section>
     </>
@@ -311,10 +295,10 @@ function GuideContent({
 
 function CopyRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#e2e6ec] bg-[#fafbfc] p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="soft-tile flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <p className="text-sm font-semibold">{label}</p>
-        <p className="mt-1 break-all font-mono text-sm text-[#596273]">
+        <p className="text-sm font-extrabold text-slate-950">{label}</p>
+        <p className="mt-1 break-all font-mono text-sm text-slate-500">
           {value}
         </p>
       </div>
@@ -325,10 +309,10 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 
 function StepList({ steps }: { steps: string[] }) {
   return (
-    <ol className="space-y-3 text-sm text-[#596273]">
+    <ol className="space-y-3 text-sm text-slate-600">
       {steps.map((step, index) => (
-        <li key={step} className="flex gap-3 rounded-md bg-[#f6f7f9] p-3">
-          <span className="flex size-6 flex-none items-center justify-center rounded-full bg-white text-xs font-bold text-[#e12828]">
+        <li key={step} className="soft-tile flex gap-3 p-3">
+          <span className="flex size-6 flex-none items-center justify-center rounded-full bg-white text-xs font-extrabold text-red-600">
             {index + 1}
           </span>
           <span className="pt-0.5 leading-6">{step}</span>
@@ -340,8 +324,8 @@ function StepList({ steps }: { steps: string[] }) {
 
 function CheckItem({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-start gap-3 rounded-md bg-[#f6f7f9] p-4 text-sm leading-6 text-[#3d4654]">
-      <CheckCircle2 className="mt-0.5 size-4 flex-none text-[#16803c]" />
+    <div className="soft-tile flex items-start gap-3 p-4 text-sm leading-6 text-slate-600">
+      <CheckCircle2 className="mt-0.5 size-4 flex-none text-emerald-700" />
       <span>{children}</span>
     </div>
   );
@@ -351,15 +335,12 @@ function GuideSkeleton() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       {[0, 1, 2, 3].map((item) => (
-        <div
-          key={item}
-          className="rounded-lg border border-[#dde1e7] bg-white p-6"
-        >
-          <div className="h-6 w-40 animate-pulse rounded bg-[#e5e9ef]" />
+        <div key={item} className="surface-card rounded-2xl p-6">
+          <div className="h-6 w-40 animate-pulse rounded-lg bg-slate-200" />
           <div className="mt-5 space-y-3">
-            <div className="h-14 animate-pulse rounded bg-[#eef1f5]" />
-            <div className="h-14 animate-pulse rounded bg-[#eef1f5]" />
-            <div className="h-14 animate-pulse rounded bg-[#eef1f5]" />
+            <div className="h-14 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-14 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-14 animate-pulse rounded-xl bg-slate-100" />
           </div>
         </div>
       ))}

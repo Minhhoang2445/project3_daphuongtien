@@ -11,7 +11,7 @@ export default async function LivePage({ params }: LivePageProps) {
   const { username } = await params;
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
+    <main className="app-page">
       <SiteHeader subtitle={`Live: ${username}`} />
       <LivePageClient username={username} />
     </main>

@@ -64,7 +64,7 @@ export function VideosPageClient() {
         message:
           error instanceof Error
             ? error.message
-            : "Backend chưa sẵn sàng, đang hiển thị mock VOD",
+            : "Backend chưa sẵn sàng, đang hiển thị VOD mẫu",
       };
     }
   }
@@ -111,30 +111,23 @@ export function VideosPageClient() {
   }, [filter, query, state.videos]);
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
+    <main className="app-page">
       <SiteHeader subtitle="Thư viện VOD" />
 
-      <section className="border-b border-[#dde1e7] bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <section className="page-hero">
+        <div className="app-container py-9">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="mb-2 text-sm font-semibold uppercase text-[#e12828]">
-                Thư viện VOD
-              </p>
-              <h1 className="text-3xl font-bold tracking-normal">
+              <p className="eyebrow mb-2">Thư viện VOD</p>
+              <h1 className="text-3xl font-extrabold tracking-normal text-slate-950 sm:text-4xl">
                 Danh sách video đã lưu
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#596273]">
-                Trang này gọi `GET /videos`, lọc VOD/record và mở chi tiết bằng
-                HLS player chung.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+                Tìm nhanh VOD, record và mở trình phát HLS cho từng video.
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => void loadVideos()}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-            >
+            <button type="button" onClick={() => void loadVideos()} className="btn btn-secondary">
               <RefreshCw className="size-4" />
               Làm mới
             </button>
@@ -144,9 +137,9 @@ export function VideosPageClient() {
             <div className="mt-6">
               <StateNotice
                 tone="warning"
-                title="Đang hiển thị mock VOD"
-                message={`${state.message}. Khi backend trả về dữ liệu thật, danh sách này sẽ tự cập nhật theo API.`}
-                actionLabel="Thử lại API"
+                title="Đang hiển thị VOD mẫu"
+                message={`${state.message}. Khi backend trả dữ liệu thật, danh sách sẽ tự cập nhật.`}
+                actionLabel="Thử lại"
                 onAction={() => void loadVideos()}
               />
             </div>
@@ -154,30 +147,30 @@ export function VideosPageClient() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-8">
+      <section className="app-container py-8">
         <div className="mb-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#7b8494]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Tìm theo title, streamer, mô tả..."
-              className="h-11 w-full rounded-md border border-[#ccd3dd] bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
+              className="field pl-10"
             />
           </label>
 
           <div className="flex items-center gap-2">
-            <Filter className="size-4 text-[#7b8494]" />
-            <div className="inline-flex rounded-md border border-[#ccd3dd] bg-white p-1">
+            <Filter className="size-4 text-slate-400" />
+            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
               {filters.map((item) => (
                 <button
                   key={item.value}
                   type="button"
                   onClick={() => setFilter(item.value)}
-                  className={`h-8 rounded px-3 text-sm font-semibold transition ${
+                  className={`h-9 rounded-lg px-3 text-sm font-extrabold transition ${
                     filter === item.value
-                      ? "bg-[#202530] text-white"
-                      : "text-[#596273] hover:bg-[#f0f2f5]"
+                      ? "bg-slate-950 text-white"
+                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-950"
                   }`}
                 >
                   {item.label}
@@ -192,7 +185,7 @@ export function VideosPageClient() {
         ) : filteredVideos.length === 0 ? (
           <EmptyVideos hasSourceData={state.videos.length > 0} />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filteredVideos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
@@ -206,31 +199,29 @@ export function VideosPageClient() {
 function VideoCard({ video }: { video: VodVideo }) {
   return (
     <Link href={`/videos/${video.id}`} className="group block">
-      <article className="overflow-hidden rounded-lg border border-[#dde1e7] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <article className="surface-card interactive-card overflow-hidden rounded-2xl">
         <VideoThumbnail video={video} />
 
         <div className="space-y-3 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="line-clamp-2 text-base font-semibold group-hover:text-[#e12828]">
+              <h2 className="line-clamp-2 text-base font-extrabold text-slate-950 group-hover:text-red-600">
                 {video.title}
               </h2>
-              <p className="mt-1 text-sm text-[#596273]">
+              <p className="mt-1 text-sm font-medium text-slate-500">
                 @{video.streamer.username}
               </p>
             </div>
-            <span className="rounded-full bg-[#eef1f5] px-2 py-1 text-xs font-bold text-[#4c5666]">
-              {video.type}
-            </span>
+            <span className="badge badge-muted flex-none">{video.type}</span>
           </div>
 
           {video.description && (
-            <p className="line-clamp-2 text-sm leading-6 text-[#596273]">
+            <p className="line-clamp-2 text-sm leading-6 text-slate-500">
               {video.description}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-[#697282]">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
             <span className="inline-flex items-center gap-1">
               <Clock3 className="size-3.5" />
               {formatDuration(video.duration)}
@@ -249,29 +240,28 @@ function VideoCard({ video }: { video: VodVideo }) {
 function VideoThumbnail({ video }: { video: VodVideo }) {
   const style: CSSProperties | undefined = video.thumbnailUrl
     ? {
-        backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.52), transparent), url(${video.thumbnailUrl})`,
+        backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.58), transparent), url(${video.thumbnailUrl})`,
       }
     : undefined;
 
   return (
     <div
-      className="relative aspect-video bg-[#202530] bg-cover bg-center"
+      className={`relative aspect-video bg-cover bg-center ${
+        video.thumbnailUrl ? "bg-slate-900" : "video-fallback"
+      }`}
       style={style}
       aria-label={video.title}
     >
-      {!video.thumbnailUrl && (
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#202530,#28566a_48%,#e12828_118%)]" />
-      )}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex size-14 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm">
+        <span className="flex size-14 items-center justify-center rounded-2xl bg-white/18 text-white backdrop-blur-sm transition group-hover:scale-105">
           <Play className="ml-1 size-7 fill-white" />
         </span>
       </div>
-      <div className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-md bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
+      <div className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-lg bg-slate-950/70 px-2.5 py-1 text-xs font-extrabold text-white">
         <Video className="size-3.5" />
         HLS VOD
       </div>
-      <div className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2.5 py-1 font-mono text-xs font-semibold text-white">
+      <div className="absolute bottom-3 right-3 rounded-lg bg-slate-950/70 px-2.5 py-1 font-mono text-xs font-extrabold text-white">
         {formatDuration(video.duration)}
       </div>
     </div>
@@ -290,7 +280,7 @@ function EmptyVideos({ hasSourceData }: { hasSourceData: boolean }) {
       message={
         hasSourceData
           ? "Thử đổi từ khóa hoặc bộ lọc để xem lại danh sách video."
-          : "Khi backend có video đã record hoặc VOD HLS, danh sách sẽ hiện tại đây."
+          : "Khi backend có video đã record hoặc VOD HLS, danh sách sẽ hiển thị tại đây."
       }
     />
   );

@@ -14,7 +14,7 @@ import {
   CalendarDays,
   Eye,
   MessageSquareText,
-  Radio,
+  RefreshCw,
   Send,
   UserRound,
 } from "lucide-react";
@@ -31,10 +31,7 @@ import {
   getStreamChatHistoryRequest,
   getStreamDetailRequest,
 } from "@/lib/live-api";
-import {
-  mockChatMessages,
-  mockLiveStreams,
-} from "@/lib/mock-data";
+import { mockChatMessages, mockLiveStreams } from "@/lib/mock-data";
 import type { ChatConnectionStatus, ChatMessage } from "@/types/chat";
 import type { LiveStream } from "@/types/media";
 
@@ -83,7 +80,7 @@ export function LivePageClient({ username }: LivePageClientProps) {
         stream: stream ?? {
           id: 0,
           title: `Live page của @${username}`,
-          description: "Mock offline stream để demo offline state.",
+          description: "Mock offline stream để demo trạng thái offline.",
           status: "OFFLINE",
           hlsUrl: "",
           viewerCount: 0,
@@ -97,7 +94,7 @@ export function LivePageClient({ username }: LivePageClientProps) {
         notice:
           error instanceof Error
             ? error.message
-            : "Backend chưa sẵn sàng, đang hiển thị mock live page",
+            : "Backend chưa sẵn sàng, đang hiển thị live page mẫu",
       };
     }
   }, [username]);
@@ -133,14 +130,14 @@ export function LivePageClient({ username }: LivePageClientProps) {
   const canPlay = isLive && Boolean(state.stream.hlsUrl);
 
   return (
-    <section className="mx-auto max-w-6xl px-5 py-8">
+    <section className="app-container py-8">
       {state.status === "mock" && (
         <div className="mb-6">
           <StateNotice
             tone="warning"
-            title="Đang hiển thị mock live page"
-            message={`${state.notice}. Khi backend chạy, page này sẽ dùng dữ liệu thật từ GET /streams/:username.`}
-            actionLabel="Thử lại stream"
+            title="Đang hiển thị live page mẫu"
+            message={`${state.notice}. Khi backend sẵn sàng, trang sẽ dùng dữ liệu thật của streamer.`}
+            actionLabel="Thử lại"
             onAction={() => void refreshLivePage()}
           />
         </div>
@@ -149,32 +146,26 @@ export function LivePageClient({ username }: LivePageClientProps) {
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <StatusBadge isLive={isLive} />
-            <span className="rounded-full bg-[#eef1f5] px-2.5 py-1 text-xs font-semibold text-[#596273]">
-              @{state.stream.streamer.username}
-            </span>
+            <StreamStatusPill isLive={isLive} />
+            <span className="badge badge-muted">@{state.stream.streamer.username}</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-normal">
+          <h1 className="text-3xl font-extrabold tracking-normal text-slate-950">
             {state.stream.title || `Live của @${username}`}
           </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#596273]">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
             {state.stream.description ||
-              "Trang live lấy stream detail, phát HLS và hiển thị chat panel."}
+              "Không có mô tả cho buổi live này."}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => void refreshLivePage()}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-        >
-          <Radio className="size-4" />
-          Làm mới stream
+        <button type="button" onClick={() => void refreshLivePage()} className="btn btn-secondary">
+          <RefreshCw className="size-4" />
+          Làm mới
         </button>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1.5fr_0.8fr]">
-        <div className="space-y-4">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.8fr)]">
+        <div className="min-w-0 space-y-4">
           {canPlay ? (
             <HlsPlayer
               src={state.stream.hlsUrl}
@@ -198,25 +189,18 @@ export function LivePageClient({ username }: LivePageClientProps) {
         />
       </div>
 
-      <Link
-        href="/"
-        className="mt-6 inline-block rounded-md border border-[#dde1e7] bg-white px-4 py-2 text-sm font-semibold text-[#4c5666] hover:bg-[#f6f7f9]"
-      >
-        Quay lại home
+      <Link href="/" className="btn btn-secondary mt-6">
+        Quay lại trang chủ
       </Link>
     </section>
   );
-}
-
-function StatusBadge({ isLive }: { isLive: boolean }) {
-  return <StreamStatusPill isLive={isLive} />;
 }
 
 function OfflinePanel({ stream }: { stream: LiveStream }) {
   return (
     <OfflineState
       username={stream.streamer.username}
-      message={`Khi backend trả status LIVE và có hlsUrl, HLS player sẽ tự hiện tại đây cho @${stream.streamer.username}.`}
+      message={`Khi @${stream.streamer.username} bắt đầu live và backend trả hlsUrl, player sẽ hiển thị tại đây.`}
     />
   );
 }
@@ -239,9 +223,9 @@ function StreamInfo({ stream }: { stream: LiveStream }) {
         label="Started"
         value={formatDate(stream.startedAt) ?? "Chưa có ngày"}
       />
-      <div className="rounded-md border border-[#dde1e7] bg-white p-4 md:col-span-3">
-        <p className="text-sm font-semibold text-[#14171f]">HLS URL</p>
-        <p className="mt-2 break-all font-mono text-xs leading-5 text-[#596273]">
+      <div className="surface-card rounded-xl p-4 md:col-span-3">
+        <p className="text-sm font-extrabold text-slate-950">HLS URL</p>
+        <p className="mt-2 break-all font-mono text-xs leading-5 text-slate-500">
           {stream.hlsUrl || "Backend chưa trả hlsUrl"}
         </p>
       </div>
@@ -259,12 +243,12 @@ function InfoTile({
   value: string;
 }) {
   return (
-    <div className="rounded-md border border-[#dde1e7] bg-white p-4">
-      <p className="flex items-center gap-2 text-sm font-semibold text-[#14171f]">
+    <div className="surface-card rounded-xl p-4">
+      <p className="flex items-center gap-2 text-sm font-extrabold text-slate-950">
         {icon}
         {label}
       </p>
-      <p className="mt-2 text-sm text-[#596273]">{value}</p>
+      <p className="mt-2 text-sm text-slate-500">{value}</p>
     </div>
   );
 }
@@ -286,7 +270,7 @@ function LiveChatPanel({
     useState<ChatConnectionStatus>(isMock || !streamId ? "local" : "connecting");
   const [connectionNotice, setConnectionNotice] = useState<string | null>(
     isMock || !streamId
-      ? "Backend đang là mock nên chat chạy local trên UI. Khi có backend thật, WebSocket sẽ join room theo streamId."
+      ? "Chat đang chạy local trên UI để demo khi backend realtime chưa sẵn sàng."
       : null
   );
 
@@ -321,7 +305,7 @@ function LiveChatPanel({
       if (closedByClient) return;
 
       setConnectionStatus("connected");
-      setConnectionNotice("Đã kết nối WebSocket và join stream room.");
+      setConnectionNotice("Đã kết nối WebSocket.");
       socket.send(
         JSON.stringify({
           event: "join_stream",
@@ -344,9 +328,7 @@ function LiveChatPanel({
       if (closedByClient) return;
 
       setConnectionStatus("closed");
-      setConnectionNotice(
-        "WebSocket đã đóng. Chat vẫn giữ history và có thể gửi local nếu cần demo."
-      );
+      setConnectionNotice("WebSocket đã đóng. Lịch sử chat vẫn được giữ lại.");
     });
 
     socket.addEventListener("error", () => {
@@ -414,29 +396,28 @@ function LiveChatPanel({
   }
 
   return (
-    <aside className="flex min-h-[520px] flex-col rounded-lg border border-[#dde1e7] bg-white">
-      <div className="border-b border-[#dde1e7] p-4">
+    <aside className="surface-panel flex min-h-[520px] flex-col overflow-hidden rounded-2xl">
+      <div className="border-b border-slate-200 p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <MessageSquareText className="size-5 text-[#e12828]" />
-            <h2 className="font-semibold">Live chat</h2>
+            <MessageSquareText className="size-5 text-red-600" />
+            <h2 className="font-extrabold text-slate-950">Live chat</h2>
           </div>
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold ${connectionLabel.className}`}
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-extrabold ${connectionLabel.className}`}
           >
             <span className="size-1.5 rounded-full bg-current" />
             {connectionLabel.text}
           </span>
         </div>
-        <p className="mt-2 text-xs leading-5 text-[#697282]">
-          {connectionNotice ||
-            "Chat history lấy từ backend, realtime nhận `new_message` qua WebSocket."}
+        <p className="mt-2 text-xs leading-5 text-slate-500">
+          {connectionNotice || "Chat realtime nhận tin nhắn mới qua WebSocket."}
         </p>
       </div>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {chatMessages.length === 0 ? (
-          <p className="rounded-md bg-[#f6f7f9] p-3 text-sm text-[#596273]">
+          <p className="rounded-xl bg-slate-100 p-3 text-sm text-slate-500">
             Chưa có tin nhắn nào.
           </p>
         ) : (
@@ -450,9 +431,9 @@ function LiveChatPanel({
         )}
       </div>
 
-      <form onSubmit={handleSend} className="border-t border-[#dde1e7] p-4">
+      <form onSubmit={handleSend} className="border-t border-slate-200 p-4">
         {!user && (
-          <p className="mb-3 rounded-md bg-[#fff8ec] p-3 text-xs leading-5 text-[#7a4a12]">
+          <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
             Đăng nhập để gửi message vào chat.
           </p>
         )}
@@ -462,13 +443,13 @@ function LiveChatPanel({
             onChange={(event) => setDraft(event.target.value)}
             disabled={!user}
             placeholder={user ? "Nhập tin nhắn..." : "Cần đăng nhập"}
-            className="h-10 min-w-0 flex-1 rounded-md border border-[#ccd3dd] px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15 disabled:bg-[#f6f7f9]"
+            className="field min-w-0 flex-1"
           />
           <button
             type="submit"
             disabled={!user || !draft.trim()}
             title="Send message"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[#e12828] px-3 text-white transition hover:bg-[#bf2222] disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn btn-primary min-h-11 px-3 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Send className="size-4" />
           </button>
@@ -487,24 +468,24 @@ function ChatBubble({
 }) {
   return (
     <div
-      className={`rounded-md p-3 ${
-        isOwnMessage ? "bg-[#fff0f0]" : "bg-[#f6f7f9]"
+      className={`rounded-xl p-3 ${
+        isOwnMessage ? "bg-red-50" : "bg-slate-100"
       }`}
     >
       <div className="mb-1 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-[#14171f]">
+          <p className="truncate text-sm font-extrabold text-slate-950">
             {message.user.username}
           </p>
-          <p className="text-[11px] font-semibold uppercase text-[#8a94a4]">
+          <p className="text-[11px] font-extrabold uppercase text-slate-400">
             {message.user.role}
           </p>
         </div>
-        <span className="flex-none text-xs text-[#8a94a4]">
+        <span className="flex-none text-xs font-medium text-slate-400">
           {formatTime(message.createdAt)}
         </span>
       </div>
-      <p className="break-words text-sm leading-6 text-[#3d4654]">
+      <p className="break-words text-sm leading-6 text-slate-700">
         {message.message}
       </p>
     </div>
@@ -516,28 +497,28 @@ function getChatConnectionLabel(status: ChatConnectionStatus) {
     case "connected":
       return {
         text: "Realtime",
-        className: "bg-[#eef7f0] text-[#16803c]",
+        className: "bg-emerald-50 text-emerald-800",
       };
     case "connecting":
       return {
         text: "Connecting",
-        className: "bg-[#eef1f5] text-[#596273]",
+        className: "bg-slate-100 text-slate-600",
       };
     case "error":
       return {
         text: "WS error",
-        className: "bg-[#fff4f4] text-[#9b1c1c]",
+        className: "bg-red-50 text-red-800",
       };
     case "closed":
       return {
         text: "Closed",
-        className: "bg-[#fff8ec] text-[#7a4a12]",
+        className: "bg-amber-50 text-amber-800",
       };
     case "local":
     default:
       return {
         text: "Local",
-        className: "bg-[#eef1f5] text-[#596273]",
+        className: "bg-slate-100 text-slate-600",
       };
   }
 }
@@ -619,21 +600,21 @@ function mergeChatMessage(current: ChatMessage[], nextMessage: ChatMessage) {
 
 function LivePageSkeleton() {
   return (
-    <section className="mx-auto max-w-6xl px-5 py-8">
-      <div className="mb-6 h-8 w-64 animate-pulse rounded bg-[#dde1e7]" />
-      <div className="grid gap-5 lg:grid-cols-[1.5fr_0.8fr]">
+    <section className="app-container py-8">
+      <div className="mb-6 h-8 w-64 animate-pulse rounded-lg bg-slate-200" />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.8fr)]">
         <div className="space-y-4">
-          <div className="aspect-video animate-pulse rounded-lg bg-[#d8dee8]" />
+          <div className="aspect-video animate-pulse rounded-2xl bg-slate-900" />
           <div className="grid gap-3 md:grid-cols-3">
             {[0, 1, 2].map((item) => (
               <div
                 key={item}
-                className="h-24 animate-pulse rounded-md border border-[#dde1e7] bg-white"
+                className="h-24 animate-pulse rounded-xl border border-slate-200 bg-white"
               />
             ))}
           </div>
         </div>
-        <div className="h-[520px] animate-pulse rounded-lg border border-[#dde1e7] bg-white" />
+        <div className="h-[520px] animate-pulse rounded-2xl border border-slate-200 bg-white" />
       </div>
     </section>
   );

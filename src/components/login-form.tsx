@@ -36,14 +36,14 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="flex items-start gap-2 rounded-md border border-[#f1b4b4] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
+        <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-900">
           <AlertCircle className="mt-0.5 size-4 flex-none" />
           <p>{error}</p>
         </div>
       )}
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Email</span>
+        <span className="text-sm font-bold text-slate-700">Email</span>
         <input
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -51,12 +51,12 @@ export function LoginForm() {
           required
           autoComplete="email"
           placeholder="minhhoang@example.com"
-          className="mt-2 h-11 w-full rounded-md border border-[#ccd3dd] bg-white px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
+          className="field mt-2"
         />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-[#2f3745]">Mật khẩu</span>
+        <span className="text-sm font-bold text-slate-700">Mật khẩu</span>
         <input
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -64,15 +64,11 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="12345678"
-          className="mt-2 h-11 w-full rounded-md border border-[#ccd3dd] bg-white px-3 text-sm outline-none transition focus:border-[#e12828] focus:ring-2 focus:ring-[#e12828]/15"
+          className="field mt-2"
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#e12828] px-4 text-sm font-semibold text-white transition hover:bg-[#bf2222] disabled:cursor-not-allowed disabled:opacity-70"
-      >
+      <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
         {isSubmitting ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (

@@ -3,10 +3,10 @@ import { SiteHeader } from "@/components/site-header";
 
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
+    <main className="app-page">
       <SiteHeader subtitle="Streamer dashboard" />
 
-      <section className="mx-auto max-w-6xl px-5 py-8">
+      <section className="app-container py-8">
         <DashboardAuthPanel />
       </section>
     </main>

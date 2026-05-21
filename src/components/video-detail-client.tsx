@@ -69,7 +69,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
         message:
           error instanceof Error
             ? error.message
-            : "Backend chưa sẵn sàng, đang hiển thị mock VOD",
+            : "Backend chưa sẵn sàng, đang hiển thị VOD mẫu",
       };
     }
   }, [videoId]);
@@ -102,24 +102,17 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
   const hlsUrl = state.video?.hlsUrl || sampleHlsUrl;
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
+    <main className="app-page">
       <SiteHeader subtitle={`VOD #${videoId}`} />
 
-      <section className="mx-auto max-w-6xl px-5 py-8">
+      <section className="app-container py-8">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <Link
-            href="/videos"
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-          >
+          <Link href="/videos" className="btn btn-secondary">
             <ArrowLeft className="size-4" />
             Danh sách VOD
           </Link>
 
-          <button
-            type="button"
-            onClick={() => void loadVideo()}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-          >
+          <button type="button" onClick={() => void loadVideo()} className="btn btn-secondary">
             <RefreshCw className="size-4" />
             Làm mới
           </button>
@@ -134,45 +127,43 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
             {isMock && (
               <StateNotice
                 tone="warning"
-                title="Đang hiển thị mock VOD"
-                message={`${state.message}. Khi backend trả về GET /videos/:id, page này sẽ phát đúng video.hlsUrl thật.`}
-                actionLabel="Thử lại API"
+                title="Đang hiển thị VOD mẫu"
+                message={`${state.message}. Khi backend trả chi tiết video, player sẽ dùng đúng hlsUrl thật.`}
+                actionLabel="Thử lại"
                 onAction={() => void loadVideo()}
               />
             )}
 
             <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="min-w-0 space-y-5">
-                <div className="overflow-hidden rounded-lg border border-[#202530] bg-[#202530]">
-                  <HlsPlayer
-                    src={hlsUrl}
-                    title={state.video.title}
-                    poster={state.video.thumbnailUrl}
-                  />
-                </div>
+                <HlsPlayer
+                  src={hlsUrl}
+                  title={state.video.title}
+                  poster={state.video.thumbnailUrl}
+                />
 
-                <article className="rounded-lg border border-[#dde1e7] bg-white p-5">
+                <article className="surface-panel rounded-2xl p-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="min-w-0">
-                      <p className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase text-[#e12828]">
+                      <p className="mb-2 inline-flex items-center gap-2 text-sm font-extrabold uppercase text-red-600">
                         <Play className="size-4 fill-current" />
                         Trình phát HLS VOD
                       </p>
-                      <h1 className="text-2xl font-bold tracking-normal">
+                      <h1 className="text-2xl font-extrabold tracking-normal text-slate-950">
                         {state.video.title}
                       </h1>
                       {state.video.description && (
-                        <p className="mt-3 max-w-3xl text-sm leading-6 text-[#596273]">
+                        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
                           {state.video.description}
                         </p>
                       )}
                     </div>
-                    <span className="w-fit rounded-full bg-[#eef1f5] px-3 py-1 text-xs font-bold text-[#4c5666]">
+                    <span className="badge badge-muted w-fit">
                       {state.video.type}
                     </span>
                   </div>
 
-                  <div className="mt-5 grid gap-3 text-sm text-[#596273] md:grid-cols-3">
+                  <div className="mt-5 grid gap-3 text-sm text-slate-500 md:grid-cols-3">
                     <InfoItem
                       icon={<UserRound className="size-4" />}
                       label="Streamer"
@@ -193,18 +184,18 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
               </div>
 
               <aside className="space-y-4">
-                <section className="rounded-lg border border-[#dde1e7] bg-white p-5">
+                <section className="surface-panel rounded-2xl p-5">
                   <div className="mb-4 flex items-center gap-2">
-                    <Film className="size-5 text-[#e12828]" />
-                    <h2 className="font-bold">Nguồn phát</h2>
+                    <Film className="size-5 text-red-600" />
+                    <h2 className="font-extrabold text-slate-950">Nguồn phát</h2>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs font-semibold uppercase text-[#7b8494]">
+                      <p className="text-xs font-extrabold uppercase text-slate-400">
                         HLS URL
                       </p>
-                      <p className="mt-1 break-all rounded-md bg-[#f3f5f8] p-3 font-mono text-xs text-[#3d4654]">
+                      <p className="mt-1 break-all rounded-xl bg-slate-100 p-3 font-mono text-xs text-slate-600">
                         {hlsUrl}
                       </p>
                     </div>
@@ -213,14 +204,16 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                   </div>
                 </section>
 
-                <section className="rounded-lg border border-[#dde1e7] bg-white p-5">
+                <section className="surface-panel rounded-2xl p-5">
                   <div className="mb-3 flex items-center gap-2">
-                    <Video className="size-5 text-[#e12828]" />
-                    <h2 className="font-bold">Adaptive HLS</h2>
+                    <Video className="size-5 text-blue-600" />
+                    <h2 className="font-extrabold text-slate-950">
+                      Adaptive HLS
+                    </h2>
                   </div>
-                  <p className="text-sm leading-6 text-[#596273]">
-                    Nếu URL là master playlist 360p/480p/720p, player sẽ hiện
-                    quality selector sau khi đọc manifest.
+                  <p className="text-sm leading-6 text-slate-500">
+                    Nếu URL là master playlist, player sẽ hiển thị lựa chọn chất
+                    lượng sau khi đọc manifest.
                   </p>
                 </section>
               </aside>
@@ -242,8 +235,8 @@ function InfoItem({
   value: string;
 }) {
   return (
-    <div className="rounded-md border border-[#e2e6ec] bg-[#fafbfc] p-4">
-      <p className="flex items-center gap-2 font-semibold text-[#14171f]">
+    <div className="soft-tile p-4">
+      <p className="flex items-center gap-2 font-extrabold text-slate-950">
         {icon}
         {label}
       </p>
@@ -256,24 +249,26 @@ function VideoDetailSkeleton() {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-5">
-        <div className="aspect-video animate-pulse rounded-lg bg-[#202530]" />
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-5">
-          <div className="h-7 w-2/3 animate-pulse rounded bg-[#e5e9ef]" />
-          <div className="mt-4 h-4 w-full animate-pulse rounded bg-[#e5e9ef]" />
-          <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-[#e5e9ef]" />
+        <div className="aspect-video animate-pulse rounded-2xl bg-slate-900" />
+        <div className="surface-card rounded-2xl p-5">
+          <div className="h-7 w-2/3 animate-pulse rounded-lg bg-slate-200" />
+          <div className="mt-4 h-4 w-full animate-pulse rounded-lg bg-slate-200" />
+          <div className="mt-3 h-4 w-3/4 animate-pulse rounded-lg bg-slate-200" />
         </div>
       </div>
-      <div className="h-56 animate-pulse rounded-lg border border-[#dde1e7] bg-white" />
+      <div className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-white" />
     </div>
   );
 }
 
 function VideoDetailError({ message }: { message: string | null }) {
   return (
-    <div className="rounded-lg border border-[#dde1e7] bg-white p-8 text-center">
-      <AlertCircle className="mx-auto mb-4 size-10 text-[#e12828]" />
-      <h1 className="text-lg font-semibold">Không tải được VOD</h1>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#596273]">
+    <div className="surface-panel rounded-2xl p-8 text-center">
+      <AlertCircle className="mx-auto mb-4 size-10 text-red-600" />
+      <h1 className="text-lg font-extrabold text-slate-950">
+        Không tải được VOD
+      </h1>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
         {message || "Backend không trả về video này và không có mock fallback."}
       </p>
     </div>

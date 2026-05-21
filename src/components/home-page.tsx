@@ -17,10 +17,7 @@ import {
   LoadingCardGrid,
   StateNotice,
 } from "@/components/state-feedback";
-import {
-  getLiveStreamsRequest,
-  getVideosRequest,
-} from "@/lib/home-api";
+import { getLiveStreamsRequest, getVideosRequest } from "@/lib/home-api";
 import { mockLiveStreams, mockVideos } from "@/lib/mock-data";
 import type { LiveStream, VodVideo } from "@/types/media";
 
@@ -64,7 +61,7 @@ export function HomePage() {
         message:
           error instanceof Error
             ? error.message
-            : "Backend chưa sẵn sàng, đang hiển thị mock data",
+            : "Backend chưa sẵn sàng, đang hiển thị dữ liệu mẫu",
       };
     }
   }
@@ -98,28 +95,22 @@ export function HomePage() {
     !isLoading && state.streams.length === 0 && state.videos.length === 0;
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
-      <section className="border-b border-[#dde1e7] bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <main className="app-page">
+      <section className="page-hero">
+        <div className="app-container py-9">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#e12828]">
-                Trang chủ
-              </p>
-              <h1 className="text-3xl font-bold tracking-normal">
+              <p className="eyebrow mb-2">Trang chủ</p>
+              <h1 className="max-w-3xl text-3xl font-extrabold tracking-normal text-slate-950 sm:text-4xl">
                 Live streams và VOD nổi bật
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#596273]">
-                Trang chủ gọi API public theo project plan: `GET
-                /streams/live` và `GET /videos`.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+                Theo dõi stream đang phát, mở lại các video đã lưu và chuyển nhanh
+                đến trang live của từng streamer.
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => void loadHomeData()}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#ccd3dd] bg-white px-4 text-sm font-semibold text-[#3d4654] hover:bg-[#f6f7f9]"
-            >
+            <button type="button" onClick={() => void loadHomeData()} className="btn btn-secondary">
               <RefreshCw className="size-4" />
               Làm mới
             </button>
@@ -129,9 +120,9 @@ export function HomePage() {
             <div className="mt-6">
               <StateNotice
                 tone="warning"
-                title="Đang hiển thị mock data"
-                message={`${state.message}. Khi backend chạy đúng URL trong .env, trang này sẽ tự hiện dữ liệu API thật.`}
-                actionLabel="Thử lại API"
+                title="Đang hiển thị dữ liệu mẫu"
+                message={`${state.message}. Khi backend sẵn sàng, trang sẽ tự dùng dữ liệu thật.`}
+                actionLabel="Thử lại"
                 onAction={() => void loadHomeData()}
               />
             </div>
@@ -139,7 +130,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-8 px-5 py-8">
+      <section className="app-container space-y-9 py-8">
         {isLoading ? (
           <HomeSkeleton />
         ) : emptyHome ? (
@@ -151,7 +142,7 @@ export function HomePage() {
               count={state.streams.length}
               emptyText="Chưa có stream nào đang live."
             >
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {state.streams.map((stream) => (
                   <LiveStreamCard key={stream.id} stream={stream} />
                 ))}
@@ -165,7 +156,7 @@ export function HomePage() {
               actionHref="/videos"
               actionLabel="Xem tất cả"
             >
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {state.videos.map((video) => (
                   <VodCard key={video.id} video={video} />
                 ))}
@@ -197,23 +188,18 @@ function HomeSection({
     <section>
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold">{title}</h2>
-          <span className="rounded-full bg-[#eef1f5] px-2.5 py-1 text-xs font-semibold text-[#596273]">
-            {count}
-          </span>
+          <h2 className="text-xl font-extrabold text-slate-950">{title}</h2>
+          <span className="badge badge-muted">{count}</span>
         </div>
         {actionHref && actionLabel && (
-          <Link
-            href={actionHref}
-            className="rounded-md px-3 py-2 text-sm font-semibold text-[#e12828] hover:bg-[#fff0f0]"
-          >
+          <Link href={actionHref} className="btn btn-secondary min-h-9 px-3">
             {actionLabel}
           </Link>
         )}
       </div>
 
       {count === 0 ? (
-        <div className="rounded-lg border border-[#dde1e7] bg-white p-6 text-sm text-[#596273]">
+        <div className="surface-card rounded-2xl p-6 text-sm text-slate-500">
           {emptyText}
         </div>
       ) : (
@@ -228,7 +214,7 @@ function LiveStreamCard({ stream }: { stream: LiveStream }) {
 
   return (
     <Link href={`/live/${stream.streamer.username}`} className="group block">
-      <article className="overflow-hidden rounded-lg border border-[#dde1e7] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <article className="surface-card interactive-card overflow-hidden rounded-2xl">
         <Thumbnail
           title={stream.title}
           thumbnailUrl={stream.thumbnailUrl}
@@ -238,26 +224,26 @@ function LiveStreamCard({ stream }: { stream: LiveStream }) {
         <div className="space-y-3 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="line-clamp-2 text-base font-semibold group-hover:text-[#e12828]">
+              <h3 className="line-clamp-2 text-base font-extrabold text-slate-950 group-hover:text-red-600">
                 {stream.title}
               </h3>
-              <p className="mt-1 text-sm text-[#596273]">
+              <p className="mt-1 text-sm font-medium text-slate-500">
                 @{stream.streamer.username}
               </p>
             </div>
-            <span className="inline-flex flex-none items-center gap-1 rounded-full bg-[#e12828] px-2 py-1 text-xs font-bold text-white">
+            <span className="badge badge-live flex-none">
               <span className="size-1.5 rounded-full bg-white" />
               LIVE
             </span>
           </div>
 
           {stream.description && (
-            <p className="line-clamp-2 text-sm leading-6 text-[#596273]">
+            <p className="line-clamp-2 text-sm leading-6 text-slate-500">
               {stream.description}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-[#697282]">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
             <span className="inline-flex items-center gap-1">
               <Eye className="size-3.5" />
               {stream.viewerCount ?? 0} viewers
@@ -278,7 +264,7 @@ function LiveStreamCard({ stream }: { stream: LiveStream }) {
 function VodCard({ video }: { video: VodVideo }) {
   return (
     <Link href={`/videos/${video.id}`} className="group block">
-      <article className="overflow-hidden rounded-lg border border-[#dde1e7] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <article className="surface-card interactive-card overflow-hidden rounded-2xl">
         <Thumbnail
           title={video.title}
           thumbnailUrl={video.thumbnailUrl}
@@ -287,24 +273,22 @@ function VodCard({ video }: { video: VodVideo }) {
 
         <div className="space-y-3 p-4">
           <div>
-            <h3 className="line-clamp-2 text-base font-semibold group-hover:text-[#e12828]">
+            <h3 className="line-clamp-2 text-base font-extrabold text-slate-950 group-hover:text-red-600">
               {video.title}
             </h3>
-            <p className="mt-1 text-sm text-[#596273]">
+            <p className="mt-1 text-sm font-medium text-slate-500">
               @{video.streamer.username}
             </p>
           </div>
 
           {video.description && (
-            <p className="line-clamp-2 text-sm leading-6 text-[#596273]">
+            <p className="line-clamp-2 text-sm leading-6 text-slate-500">
               {video.description}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-[#697282]">
-            <span className="rounded-full bg-[#eef1f5] px-2 py-1">
-              {video.type}
-            </span>
+          <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
+            <span className="badge badge-muted py-1">{video.type}</span>
             <span className="inline-flex items-center gap-1">
               <Clock3 className="size-3.5" />
               {formatDuration(video.duration)}
@@ -333,7 +317,7 @@ function Thumbnail({
     () =>
       thumbnailUrl
         ? {
-            backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent), url(${thumbnailUrl})`,
+            backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.58), transparent), url(${thumbnailUrl})`,
           }
         : undefined,
     [thumbnailUrl]
@@ -341,15 +325,14 @@ function Thumbnail({
 
   return (
     <div
-      className="relative aspect-video bg-[#202530] bg-cover bg-center"
+      className={`relative aspect-video bg-cover bg-center ${
+        thumbnailUrl ? "bg-slate-900" : "video-fallback"
+      }`}
       style={style}
       aria-label={title}
     >
-      {!thumbnailUrl && (
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#202530,#314f5f_45%,#e12828_120%)]" />
-      )}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex size-14 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm">
+        <span className="flex size-14 items-center justify-center rounded-2xl bg-white/18 text-white backdrop-blur-sm transition group-hover:scale-105">
           {variant === "live" ? (
             <Radio className="size-7" />
           ) : (
@@ -357,7 +340,7 @@ function Thumbnail({
           )}
         </span>
       </div>
-      <div className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-md bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
+      <div className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-lg bg-slate-950/70 px-2.5 py-1 text-xs font-extrabold text-white">
         {variant === "live" ? (
           <Radio className="size-3.5" />
         ) : (
@@ -374,7 +357,7 @@ function HomeSkeleton() {
     <div className="space-y-8">
       {[0, 1].map((section) => (
         <section key={section}>
-          <div className="mb-4 h-7 w-36 animate-pulse rounded-md bg-[#dde1e7]" />
+          <div className="mb-4 h-7 w-36 animate-pulse rounded-lg bg-slate-200" />
           <LoadingCardGrid count={3} />
         </section>
       ))}
@@ -387,7 +370,7 @@ function EmptyHome() {
     <EmptyState
       icon={<Radio className="size-6" />}
       title="Chưa có dữ liệu hiển thị"
-      message="Backend trả về danh sách rỗng cho cả live stream và VOD. Khi có streamer live hoặc VOD được tạo, card sẽ hiện tại đây."
+      message="Khi có streamer live hoặc VOD được tạo, nội dung sẽ xuất hiện tại đây."
     />
   );
 }
