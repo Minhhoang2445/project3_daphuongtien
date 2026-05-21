@@ -17,6 +17,7 @@ import {
   LoadingCardGrid,
   StateNotice,
 } from "@/components/state-feedback";
+import { SiteHeader } from "@/components/site-header";
 import { getVideosRequest } from "@/lib/videos-api";
 import { mockVideos } from "@/lib/mock-data";
 import type { VideoType, VodVideo } from "@/types/media";
@@ -111,6 +112,8 @@ export function VideosPageClient() {
 
   return (
     <main className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
+      <SiteHeader subtitle="Thư viện VOD" />
+
       <section className="border-b border-[#dde1e7] bg-white">
         <div className="mx-auto max-w-6xl px-5 py-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
