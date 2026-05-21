@@ -1,3 +1,4 @@
+import type { ChatMessage } from "@/types/chat";
 import type { LiveStream, VodVideo } from "@/types/media";
 
 export const sampleHlsUrl =
@@ -81,6 +82,42 @@ export const mockVideos: VodVideo[] = [
       id: 4,
       username: "vod_team",
       avatarUrl: null,
+    },
+  },
+];
+
+export const mockChatMessages: ChatMessage[] = [
+  {
+    id: 1,
+    streamId: 10,
+    message: "Live muot qua",
+    createdAt: "2026-05-20T22:55:00Z",
+    user: {
+      id: 2,
+      username: "viewer01",
+      role: "VIEWER",
+    },
+  },
+  {
+    id: 2,
+    streamId: 10,
+    message: "Dang xem HLS tren web frontend",
+    createdAt: "2026-05-20T22:56:00Z",
+    user: {
+      id: 3,
+      username: "viewer02",
+      role: "VIEWER",
+    },
+  },
+  {
+    id: 3,
+    streamId: 10,
+    message: "Chat UI san sang cho buoc WebSocket",
+    createdAt: "2026-05-20T22:57:00Z",
+    user: {
+      id: 1,
+      username: "minhhoang",
+      role: "STREAMER",
     },
   },
 ];
