@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum StreamStatus {
+  OFFLINE
+  LIVE
+}
+
+enum VideoType {
+  VOD
+  RECORD
+}
+
+model Streamer {
+  id           BigInt        @id @default(autoincrement())
+  username     String        @unique
+  streamKey    String        @unique
+  title        String?
+  status       StreamStatus  @default(OFFLINE)
+  hlsUrl       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  videos       Video[]
+  chatMessages ChatMessage[]
+
+  @@map("streamers")
+}
+
+model Viewer {
+  id           BigInt        @id @default(autoincrement())
+  username     String        @unique
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  chatMessages ChatMessage[]
+
+  @@map("viewers")
+}
+
+model Video {
+  id         BigInt    @id @default(autoincrement())
+  streamerId BigInt
+  title      String
+  type       VideoType @default(VOD)
+  hlsUrl     String
+  createdAt  DateTime  @default(now())
+  streamer   Streamer  @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+
+  @@index([streamerId])
+  @@map("videos")
+}
+
+model ChatMessage {
+  id         BigInt   @id @default(autoincrement())
+  streamerId BigInt
+  viewerId   BigInt
+  message    String
+  createdAt  DateTime @default(now())
+  streamer   Streamer @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+  viewer     Viewer   @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+
+  @@index([streamerId])
+  @@index([viewerId])
+  @@map("chat_messages")
+}
