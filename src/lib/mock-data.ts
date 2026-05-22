@@ -1,9 +1,9 @@
 import type { ChatMessage } from "@/types/chat";
 import type { LiveStream, VodVideo } from "@/types/media";
+import { STREAMING_HLS_URL } from "@/lib/streaming-config";
 
 export const sampleHlsUrl =
-  process.env.NEXT_PUBLIC_SAMPLE_HLS_URL ||
-  "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
+  process.env.NEXT_PUBLIC_SAMPLE_HLS_URL || STREAMING_HLS_URL;
 
 export const mockLiveStreams: LiveStream[] = [
   {

@@ -18,11 +18,11 @@ import { CopyButton } from "@/components/copy-button";
 import { HlsPlayer } from "@/components/hls-player";
 import { SiteHeader } from "@/components/site-header";
 import { StateNotice } from "@/components/state-feedback";
-import { getVideoRequest } from "@/lib/videos-api";
+import { getServerVideoRequest, getVideoRequest } from "@/lib/videos-api";
 import { mockVideos, sampleHlsUrl } from "@/lib/mock-data";
 import type { VodVideo } from "@/types/media";
 
-type VideoDetailStatus = "loading" | "ready" | "mock" | "error";
+type VideoDetailStatus = "loading" | "ready" | "server" | "mock" | "error";
 
 type VideoDetailState = {
   video: VodVideo | null;
@@ -49,6 +49,18 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
         message: null,
       };
     } catch (error) {
+      try {
+        const video = await getServerVideoRequest(videoId);
+
+        return {
+          video,
+          status: "server",
+          message: "Video được lấy trực tiếp từ VPS streaming.",
+        };
+      } catch {
+        // Use demo data below if neither backend nor VPS catalog can resolve this id.
+      }
+
       const fallbackVideo =
         mockVideos.find((item) => String(item.id) === videoId) ?? null;
 
@@ -99,6 +111,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
 
   const isLoading = state.status === "loading";
   const isMock = state.status === "mock";
+  const isServer = state.status === "server";
   const hlsUrl = state.video?.hlsUrl || sampleHlsUrl;
 
   return (
@@ -130,6 +143,16 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                 title="Đang hiển thị VOD mẫu"
                 message={`${state.message}. Khi backend trả chi tiết video, player sẽ dùng đúng hlsUrl thật.`}
                 actionLabel="Thử lại"
+                onAction={() => void loadVideo()}
+              />
+            )}
+
+            {isServer && (
+              <StateNotice
+                tone="success"
+                title="Đang phát video từ VPS"
+                message={state.message || "Nguồn phát được lấy từ server streaming."}
+                actionLabel="Làm mới"
                 onAction={() => void loadVideo()}
               />
             )}

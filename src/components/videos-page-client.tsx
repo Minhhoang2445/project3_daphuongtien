@@ -18,11 +18,11 @@ import {
   StateNotice,
 } from "@/components/state-feedback";
 import { SiteHeader } from "@/components/site-header";
-import { getVideosRequest } from "@/lib/videos-api";
+import { getServerVideosRequest, getVideosRequest } from "@/lib/videos-api";
 import { mockVideos } from "@/lib/mock-data";
 import type { VideoType, VodVideo } from "@/types/media";
 
-type VideosStatus = "loading" | "ready" | "mock";
+type VideosStatus = "loading" | "ready" | "server" | "mock";
 type VideoFilter = "ALL" | VideoType;
 
 type VideosState = {
@@ -58,12 +58,31 @@ export function VideosPageClient() {
         message: null,
       };
     } catch (error) {
+      let serverMessage: string | null = null;
+
+      try {
+        const serverData = await getServerVideosRequest();
+        serverMessage = serverData.message;
+
+        if (serverData.videos.length > 0) {
+          return {
+            videos: serverData.videos,
+            status: "server",
+            message: serverData.message,
+          };
+        }
+      } catch {
+        // Fall back to local demo data below when the VPS has no exposed catalog yet.
+      }
+
       return {
         videos: mockVideos,
         status: "mock",
         message:
           error instanceof Error
-            ? error.message
+            ? `${error.message}. ${
+                serverMessage || "VPS chưa expose danh sách video qua HTTP."
+              }`
             : "Backend chưa sẵn sàng, đang hiển thị VOD mẫu",
       };
     }
@@ -94,6 +113,7 @@ export function VideosPageClient() {
 
   const isLoading = state.status === "loading";
   const isMock = state.status === "mock";
+  const isServer = state.status === "server";
 
   const filteredVideos = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
@@ -140,6 +160,21 @@ export function VideosPageClient() {
                 title="Đang hiển thị VOD mẫu"
                 message={`${state.message}. Khi backend trả dữ liệu thật, danh sách sẽ tự cập nhật.`}
                 actionLabel="Thử lại"
+                onAction={() => void loadVideos()}
+              />
+            </div>
+          )}
+
+          {isServer && (
+            <div className="mt-6">
+              <StateNotice
+                tone="success"
+                title="Đang hiển thị video từ VPS"
+                message={
+                  state.message ||
+                  "Danh sách được lấy qua proxy Next.js từ server streaming."
+                }
+                actionLabel="Làm mới VPS"
                 onAction={() => void loadVideos()}
               />
             </div>

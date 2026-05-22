@@ -19,9 +19,10 @@ import {
 } from "@/components/state-feedback";
 import { getLiveStreamsRequest, getVideosRequest } from "@/lib/home-api";
 import { mockLiveStreams, mockVideos } from "@/lib/mock-data";
+import { getServerVideosRequest } from "@/lib/videos-api";
 import type { LiveStream, VodVideo } from "@/types/media";
 
-type HomeStatus = "loading" | "ready" | "mock";
+type HomeStatus = "loading" | "ready" | "server" | "mock";
 
 type HomeState = {
   streams: LiveStream[];
@@ -54,13 +55,33 @@ export function HomePage() {
         message: null,
       };
     } catch (error) {
+      let serverMessage: string | null = null;
+
+      try {
+        const serverData = await getServerVideosRequest();
+        serverMessage = serverData.message;
+
+        if (serverData.videos.length > 0) {
+          return {
+            streams: mockLiveStreams,
+            videos: serverData.videos,
+            status: "server",
+            message: serverData.message,
+          };
+        }
+      } catch {
+        // Keep the home page usable with local demo data if the VPS has no catalog.
+      }
+
       return {
         streams: mockLiveStreams,
         videos: mockVideos,
         status: "mock",
         message:
           error instanceof Error
-            ? error.message
+            ? `${error.message}. ${
+                serverMessage || "VPS chưa expose danh sách video qua HTTP."
+              }`
             : "Backend chưa sẵn sàng, đang hiển thị dữ liệu mẫu",
       };
     }
@@ -91,6 +112,7 @@ export function HomePage() {
 
   const isLoading = state.status === "loading";
   const isMock = state.status === "mock";
+  const isServer = state.status === "server";
   const emptyHome =
     !isLoading && state.streams.length === 0 && state.videos.length === 0;
 
@@ -123,6 +145,21 @@ export function HomePage() {
                 title="Đang hiển thị dữ liệu mẫu"
                 message={`${state.message}. Khi backend sẵn sàng, trang sẽ tự dùng dữ liệu thật.`}
                 actionLabel="Thử lại"
+                onAction={() => void loadHomeData()}
+              />
+            </div>
+          )}
+
+          {isServer && (
+            <div className="mt-6">
+              <StateNotice
+                tone="success"
+                title="Đang hiển thị video từ VPS"
+                message={
+                  state.message ||
+                  "VOD được lấy qua proxy Next.js từ server streaming."
+                }
+                actionLabel="Làm mới"
                 onAction={() => void loadHomeData()}
               />
             </div>

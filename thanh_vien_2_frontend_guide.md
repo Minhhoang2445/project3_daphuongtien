@@ -61,7 +61,7 @@ Ví dụ `.env`:
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
 NEXT_PUBLIC_WS_URL=ws://localhost:8080
-NEXT_PUBLIC_SAMPLE_HLS_URL=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
+NEXT_PUBLIC_SAMPLE_HLS_URL=http://103.6.234.179/hls/minhhoang_live_key.m3u8
 ```
 
 Nếu backend chưa xong, dùng mock data tạm để làm giao diện trước. Khi backend xong chỉ thay hàm gọi API.
@@ -121,8 +121,8 @@ src/components/hls-player.tsx
 Nguồn HLS sẽ có dạng:
 
 ```text
-Live: http://IP_VPS/hls/{streamKey}.m3u8
-VOD:  http://IP_VPS/vod-hls/sample/index.m3u8
+Live: http://103.6.234.179/hls/minhhoang_live_key.m3u8
+VOD:  http://103.6.234.179/vod-hls/sample/index.m3u8
 ```
 
 Lưu ý khi test:
@@ -217,9 +217,10 @@ Dashboard là nơi streamer lấy thông tin để nhập vào OBS.
 
 Cần hiển thị:
 
-- RTMP Server: `rtmp://IP_VPS:1935/live`
-- Stream Key: ví dụ `mh_9x8a2k`
-- HLS URL: `http://IP_VPS/hls/mh_9x8a2k.m3u8`
+- RTMP Server: `rtmp://103.6.234.179:1935/live`
+- Stream Key: `minhhoang_live_key`
+- HLS URL: `http://103.6.234.179/hls/minhhoang_live_key.m3u8`
+- Statistics: `http://103.6.234.179/stat`
 - Status: `OFFLINE` hoặc `LIVE`
 - Nút sao chép từng trường.
 - Nút regenerate Stream Key.
@@ -253,7 +254,7 @@ Việc của bạn:
 VOD URL mẫu:
 
 ```text
-http://IP_VPS/vod-hls/record-001/index.m3u8
+http://103.6.234.179/vod-hls/record-001/index.m3u8
 ```
 
 ## 12. Bước 9 - Guide Page `/guide`
@@ -264,7 +265,7 @@ Nội dung cần có:
 
 - OBS > Settings > Stream.
 - Service: Custom.
-- Server: `rtmp://IP_VPS:1935/live`.
+- Server: `rtmp://103.6.234.179:1935/live`.
 - Stream Key: lấy trong dashboard.
 - Output settings gợi ý:
   - Resolution: 1280x720.
@@ -273,7 +274,7 @@ Nội dung cần có:
   - Audio bitrate: 128 Kbps.
 - Larix:
   - New connection.
-  - URL: `rtmp://IP_VPS:1935/live/{streamKey}` hoặc theo cách server nhận key.
+  - URL: `rtmp://103.6.234.179:1935/live/minhhoang_live_key` hoặc theo cách server nhận key.
   - Start broadcast.
 
 Có thể hiển thị thông tin Stream Key nếu user đã đăng nhập.
@@ -312,9 +313,9 @@ Cần có:
 Hỏi người 3/4 hoặc người phụ trách server các URL sau:
 
 ```text
-Live HLS: http://IP_VPS/hls/{streamKey}.m3u8
-VOD HLS:  http://IP_VPS/vod-hls/sample/index.m3u8
-Adaptive: http://IP_VPS/vod-hls/adaptive/master.m3u8
+Live HLS: http://103.6.234.179/hls/minhhoang_live_key.m3u8
+VOD HLS:  http://103.6.234.179/vod-hls/sample/index.m3u8
+Adaptive: http://103.6.234.179/vod-hls/adaptive/master.m3u8
 ```
 
 Test nhanh:
@@ -323,7 +324,8 @@ Test nhanh:
 2. Mở DevTools > Network khi player chạy.
 3. Kiểm tra `.m3u8` và `.ts` trả về status `200`.
 4. Nếu adaptive, trong player phải có Auto/360p/480p/720p.
-5. Nếu live, cho phép trễ 5-20 giây vì HLS có latency.
+5. Frontend đã cấu hình `hls.js` bám sát mép live; với HLS tối ưu, mục tiêu thực tế khoảng 2-5 giây.
+6. Muốn realtime dưới 1 giây cần WebRTC/LiveKit hoặc WHIP/WHEP, không thể đạt chỉ bằng Nginx RTMP + HLS.
 
 ## 16. Checklist Trước Khi Nộp
 

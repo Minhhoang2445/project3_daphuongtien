@@ -19,7 +19,10 @@ import {
   regenerateStreamKeyRequest,
   updateStreamInfoRequest,
 } from "@/lib/dashboard-api";
-import { sampleHlsUrl } from "@/lib/mock-data";
+import {
+  STREAMING_DEMO_CONNECTION,
+  STREAMING_STAT_URL,
+} from "@/lib/streaming-config";
 import type { AuthUser } from "@/types/auth";
 import type { StreamConnection, StreamInfoInput } from "@/types/dashboard";
 
@@ -32,10 +35,7 @@ type DashboardState = {
 };
 
 const mockConnection: StreamConnection = {
-  rtmpServer: "rtmp://IP_VPS:1935/live",
-  streamKey: "mh_9x8a2k",
-  hlsUrl: sampleHlsUrl,
-  status: "OFFLINE",
+  ...STREAMING_DEMO_CONNECTION,
 };
 
 export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
@@ -65,7 +65,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
         notice:
           requestError instanceof Error
             ? requestError.message
-            : "Backend chưa sẵn sàng, đang hiển thị Stream Key mẫu",
+            : "Backend chưa sẵn sàng, đang hiển thị cấu hình VPS demo",
       };
     }
   }, []);
@@ -109,21 +109,15 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
       });
       setMessage("Đã tạo Stream Key mới.");
     } catch (requestError) {
-      const suffix = Math.random().toString(36).slice(2, 8);
-      const nextKey = `${user.username}_${suffix}`;
       setState({
-        connection: {
-          ...mockConnection,
-          streamKey: nextKey,
-          hlsUrl: `${sampleHlsUrl}?key=${nextKey}`,
-        },
+        connection: mockConnection,
         mode: "mock",
         notice:
           requestError instanceof Error
             ? requestError.message
-            : "Regenerate API chưa sẵn sàng, đang tạo mock key",
+            : "Regenerate API chưa sẵn sàng, đang giữ Stream Key VPS demo",
       });
-      setMessage("Backend chưa sẵn sàng, đã tạo Stream Key mẫu trên UI.");
+      setMessage("Backend chưa sẵn sàng, VPS demo dùng Stream Key cố định stream.");
     } finally {
       setIsRegenerating(false);
     }
@@ -243,6 +237,7 @@ export function DashboardStreamerPanel({ user }: { user: AuthUser }) {
           <CredentialRow label="RTMP Server" value={state.connection.rtmpServer} />
           <CredentialRow label="Stream Key" value={state.connection.streamKey} />
           <CredentialRow label="HLS URL" value={state.connection.hlsUrl} />
+          <CredentialRow label="Statistics" value={STREAMING_STAT_URL} />
           <div className="soft-tile p-4">
             <p className="text-sm font-extrabold text-slate-950">Trạng thái</p>
             <span

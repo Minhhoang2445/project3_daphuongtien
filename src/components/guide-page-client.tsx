@@ -18,6 +18,10 @@ import { CopyButton } from "@/components/copy-button";
 import { SiteHeader } from "@/components/site-header";
 import { StateNotice } from "@/components/state-feedback";
 import { getStreamKeyRequest } from "@/lib/dashboard-api";
+import {
+  STREAMING_DEMO_CONNECTION,
+  STREAMING_STAT_URL,
+} from "@/lib/streaming-config";
 import type { StreamConnection } from "@/types/dashboard";
 
 type GuideMode = "loading" | "ready" | "mock" | "guest";
@@ -29,10 +33,7 @@ type GuideState = {
 };
 
 const mockGuideConnection: StreamConnection = {
-  rtmpServer: "rtmp://IP_VPS:1935/live",
-  streamKey: "mh_9x8a2k",
-  hlsUrl: "http://IP_VPS/hls/mh_9x8a2k.m3u8",
-  status: "OFFLINE",
+  ...STREAMING_DEMO_CONNECTION,
 };
 
 const outputSettings = [
@@ -40,7 +41,7 @@ const outputSettings = [
   ["FPS", "30"],
   ["Video bitrate", "2500 Kbps"],
   ["Audio bitrate", "128 Kbps"],
-  ["Keyframe interval", "2 seconds"],
+  ["Keyframe interval", "1 second"],
   ["Rate control", "CBR"],
 ];
 
@@ -54,7 +55,7 @@ export function GuidePageClient() {
         connection: mockGuideConnection,
         mode: "guest",
         notice:
-          "Đang dùng cấu hình mẫu. Đăng nhập tài khoản STREAMER để lấy Stream Key thật.",
+          "Đang dùng cấu hình VPS demo của nhóm. Đăng nhập tài khoản STREAMER nếu backend đã cấp Stream Key riêng.",
       };
     }
 
@@ -73,7 +74,7 @@ export function GuidePageClient() {
         notice:
           requestError instanceof Error
             ? requestError.message
-            : "Backend chưa sẵn sàng, đang hiển thị cấu hình mẫu",
+            : "Backend chưa sẵn sàng, đang hiển thị cấu hình VPS demo của nhóm",
       };
     }
   }, [user]);
@@ -118,8 +119,8 @@ export function GuidePageClient() {
                 Hướng dẫn OBS và Larix
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-                Cấu hình thiết bị đẩy RTMP lên server, sau đó xem bằng HLS trên
-                live page.
+                Cấu hình thiết bị đẩy RTMP lên server, sau đó xem bằng HLS độ
+                trễ thấp trên live page.
               </p>
             </div>
 
@@ -161,12 +162,8 @@ function GuideContent({
       {showNotice && (
         <StateNotice
           tone="warning"
-          title={
-            state.mode === "guest"
-              ? "Đang hiển thị cấu hình mẫu"
-              : "Đang hiển thị guide mẫu"
-          }
-          message={`${state.notice}. Khi backend và token sẵn sàng, trang sẽ lấy dữ liệu thật.`}
+          title="Đang hiển thị cấu hình VPS demo"
+          message={`${state.notice}. Cấu hình này khớp server streaming đang chạy; khi backend trả dữ liệu, trang sẽ ưu tiên dữ liệu backend.`}
         />
       )}
 
@@ -195,6 +192,7 @@ function GuideContent({
             <CopyRow label="Stream Key" value={state.connection.streamKey} />
             <CopyRow label="HLS URL" value={state.connection.hlsUrl} />
             <CopyRow label="Larix URL" value={larixUrl} />
+            <CopyRow label="Statistics" value={STREAMING_STAT_URL} />
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -282,10 +280,12 @@ function GuideContent({
 
         <div className="grid gap-3 md:grid-cols-2">
           <CheckItem>Mở HLS URL trên browser, file .m3u8 trả về 200.</CheckItem>
+          <CheckItem>Mở trang statistics để kiểm tra publisher và bandwidth.</CheckItem>
           <CheckItem>Trong live page, player load được playlist và segment.</CheckItem>
           <CheckItem>Web HTTP nên dùng HLS HTTP để tránh mixed content.</CheckItem>
           <CheckItem>Nginx bật CORS cho .m3u8 và segment nếu khác domain.</CheckItem>
-          <CheckItem>HLS live thường có latency 5-20 giây.</CheckItem>
+          <CheckItem>Với HLS đã tối ưu, mục tiêu thực tế là khoảng 2-5 giây.</CheckItem>
+          <CheckItem>Muốn realtime dưới 1 giây cần WebRTC/LiveKit hoặc WHIP/WHEP thay vì HLS.</CheckItem>
           <CheckItem>Vào /live/username để chụp minh chứng sau khi stream chạy.</CheckItem>
         </div>
       </section>

@@ -21,6 +21,8 @@ type QualityLevel = {
   bitrate: number;
 };
 
+const HLS_SOURCE_PATTERN = /\.m3u8($|\?)/i;
+
 export function HlsPlayer(props: HlsPlayerProps) {
   if (!props.src) {
     return (
@@ -43,7 +45,7 @@ function HlsPlayerInner({
   src,
   title,
   poster,
-  autoPlay = false,
+  autoPlay,
   muted = false,
   isLive = false,
 }: HlsPlayerProps) {
@@ -53,17 +55,23 @@ function HlsPlayerInner({
   const [error, setError] = useState<string | null>(null);
   const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([]);
   const [selectedQuality, setSelectedQuality] = useState("-1");
+  const shouldAutoPlay = autoPlay ?? isLive;
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    const player = video;
+    let liveRecoverTimeout: number | null = null;
+    let liveWatchdogInterval: number | null = null;
+    let lastLiveTime = 0;
+    let stalledTicks = 0;
 
     function markReady() {
       setStatus("ready");
       setError(null);
 
-      if (autoPlay) {
-        void video?.play().catch(() => {
+      if (shouldAutoPlay) {
+        void player.play().catch(() => {
           // Browser autoplay policy can block playback; native controls remain usable.
         });
       }
@@ -74,16 +82,108 @@ function HlsPlayerInner({
       setError(message);
     }
 
+    function recoverLivePlayback() {
+      if (!isLive) return;
+
+      const hls = hlsRef.current;
+      const liveSyncPosition = hls?.liveSyncPosition;
+
+      if (typeof liveSyncPosition === "number" && Number.isFinite(liveSyncPosition)) {
+        player.currentTime = liveSyncPosition;
+      }
+
+      hls?.startLoad(-1);
+
+      if (shouldAutoPlay) {
+        void player.play().catch(() => {
+          // Native controls remain available when autoplay recovery is blocked.
+        });
+      }
+    }
+
+    function scheduleLiveRecovery() {
+      if (!isLive || liveRecoverTimeout) return;
+
+      liveRecoverTimeout = window.setTimeout(() => {
+        liveRecoverTimeout = null;
+        recoverLivePlayback();
+      }, 1800);
+    }
+
+    function clearLiveRecovery() {
+      if (!liveRecoverTimeout) return;
+
+      window.clearTimeout(liveRecoverTimeout);
+      liveRecoverTimeout = null;
+    }
+
+    function startLiveWatchdog() {
+      if (!isLive || liveWatchdogInterval) return;
+
+      lastLiveTime = player.currentTime;
+      stalledTicks = 0;
+      liveWatchdogInterval = window.setInterval(() => {
+        if (player.paused || player.ended) {
+          lastLiveTime = player.currentTime;
+          stalledTicks = 0;
+          return;
+        }
+
+        const isAdvancing = player.currentTime > lastLiveTime + 0.25;
+        const hasFutureData = player.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA;
+
+        if (isAdvancing || hasFutureData) {
+          lastLiveTime = player.currentTime;
+          stalledTicks = 0;
+          return;
+        }
+
+        stalledTicks += 1;
+        lastLiveTime = player.currentTime;
+
+        if (stalledTicks >= 2) {
+          stalledTicks = 0;
+          recoverLivePlayback();
+        }
+      }, 2500);
+    }
+
+    function stopLiveWatchdog() {
+      if (!liveWatchdogInterval) return;
+
+      window.clearInterval(liveWatchdogInterval);
+      liveWatchdogInterval = null;
+    }
+
+    if (!HLS_SOURCE_PATTERN.test(src)) {
+      player.src = src;
+      player.addEventListener("loadedmetadata", markReady);
+      player.addEventListener("error", () =>
+        markError("Trình duyệt không phát được video này.")
+      );
+
+      return () => {
+        player.removeEventListener("loadedmetadata", markReady);
+      };
+    }
+
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: isLive,
         backBufferLength: isLive ? 30 : 90,
+        ...(isLive
+          ? {
+              liveSyncDurationCount: 2,
+              liveMaxLatencyDurationCount: 5,
+              maxLiveSyncPlaybackRate: 1.2,
+            }
+          : {}),
       });
 
       hlsRef.current = hls;
       hls.loadSource(src);
-      hls.attachMedia(video);
+      hls.attachMedia(player);
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
         setQualityLevels(
@@ -100,10 +200,21 @@ function HlsPlayerInner({
         setSelectedQuality(String(data.level));
       });
 
+      hls.on(Hls.Events.LEVEL_LOADED, () => {
+        if (isLive) {
+          startLiveWatchdog();
+        }
+      });
+
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (!data.fatal) return;
 
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          if (isLive) {
+            recoverLivePlayback();
+            return;
+          }
+
           markError("Không tải được HLS playlist hoặc segment.");
           hls.startLoad();
           return;
@@ -119,26 +230,37 @@ function HlsPlayerInner({
         hls.destroy();
       });
 
+      player.addEventListener("waiting", scheduleLiveRecovery);
+      player.addEventListener("stalled", scheduleLiveRecovery);
+      player.addEventListener("playing", clearLiveRecovery);
+
       return () => {
+        clearLiveRecovery();
+        stopLiveWatchdog();
+        player.removeEventListener("waiting", scheduleLiveRecovery);
+        player.removeEventListener("stalled", scheduleLiveRecovery);
+        player.removeEventListener("playing", clearLiveRecovery);
         hls.destroy();
         hlsRef.current = null;
       };
     }
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      video.addEventListener("loadedmetadata", markReady);
-      video.addEventListener("error", () =>
+    if (player.canPlayType("application/vnd.apple.mpegurl")) {
+      player.src = src;
+      player.addEventListener("loadedmetadata", markReady);
+      player.addEventListener("error", () =>
         markError("Trình duyệt không phát được HLS URL này.")
       );
 
       return () => {
-        video.removeEventListener("loadedmetadata", markReady);
+        clearLiveRecovery();
+        stopLiveWatchdog();
+        player.removeEventListener("loadedmetadata", markReady);
       };
     }
 
     markError("Trình duyệt không hỗ trợ HLS.");
-  }, [autoPlay, isLive, src]);
+  }, [isLive, shouldAutoPlay, src]);
 
   function handleQualityChange(value: string) {
     setSelectedQuality(value);
@@ -155,6 +277,7 @@ function HlsPlayerInner({
         <video
           ref={videoRef}
           poster={poster || undefined}
+          autoPlay={shouldAutoPlay}
           controls
           muted={muted}
           playsInline
