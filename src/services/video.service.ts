@@ -5,17 +5,21 @@ function mapVideo(video: {
   title: string;
   type: string;
   hlsUrl: string;
+  recordPath: string | null;
+  vodPath: string | null;
   createdAt: Date;
   streamer: {
     username: string;
   };
 }) {
   return {
-    id: video.id,
+    id: video.id.toString(),
     streamerUsername: video.streamer.username,
     title: video.title,
     type: video.type,
     hlsUrl: video.hlsUrl,
+    recordPath: video.recordPath,
+    vodPath: video.vodPath,
     createdAt: video.createdAt
   };
 }
@@ -52,4 +56,43 @@ export async function getVideoById(id: bigint) {
   });
 
   return video ? mapVideo(video) : null;
+}
+
+export async function createVideo(input: {
+  streamerUsername: string;
+  title: string;
+  type?: 'VOD' | 'RECORD';
+  hlsUrl: string;
+  recordPath?: string;
+  vodPath?: string;
+}) {
+  const streamer = await prisma.streamer.findUnique({
+    where: {
+      username: input.streamerUsername
+    }
+  });
+
+  if (!streamer) {
+    throw new Error('Streamer not found');
+  }
+
+  const video = await prisma.video.create({
+    data: {
+      streamerId: streamer.id,
+      title: input.title,
+      type: input.type || 'RECORD',
+      hlsUrl: input.hlsUrl,
+      recordPath: input.recordPath || null,
+      vodPath: input.vodPath || null
+    },
+    include: {
+      streamer: {
+        select: {
+          username: true
+        }
+      }
+    }
+  });
+
+  return mapVideo(video);
 }

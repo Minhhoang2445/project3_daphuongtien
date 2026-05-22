@@ -28,7 +28,9 @@ model Streamer {
   updatedAt    DateTime      @updatedAt
   videos       Video[]
   chatMessages ChatMessage[]
-
+  
+  restreamVideo String?
+  
   @@map("streamers")
 }
 
@@ -43,13 +45,27 @@ model Viewer {
 }
 
 model Video {
-  id         BigInt    @id @default(autoincrement())
-  streamerId BigInt
-  title      String
-  type       VideoType @default(VOD)
-  hlsUrl     String
-  createdAt  DateTime  @default(now())
-  streamer   Streamer  @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+  id          BigInt    @id @default(autoincrement())
+  streamerId  BigInt
+
+  title       String
+  type        VideoType @default(RECORD)
+
+  // Link HLS để frontend phát video xem lại
+  // Ví dụ: http://103.6.234.179/vod-hls/minhhoang-record/index.m3u8
+  hlsUrl      String
+
+  // Đường dẫn file record gốc trên VPS, nếu có
+  // Ví dụ: /var/records/minhhoang_live_key-1779292302.flv
+  recordPath  String?
+
+  // Thư mục HLS trên VPS, nếu muốn lưu để dễ debug
+  // Ví dụ: /var/www/vod-hls/minhhoang-record
+  vodPath     String?
+
+  createdAt   DateTime  @default(now())
+
+  streamer    Streamer  @relation(fields: [streamerId], references: [id], onDelete: Cascade)
 
   @@index([streamerId])
   @@map("videos")
