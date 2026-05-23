@@ -215,7 +215,7 @@ textarea {
   transform: translateY(-2px);
 }
 
-.video-fallback {
+.video-placeholder {
   background: linear-gradient(
     135deg,
     rgb(15 23 42 / 0.96) 0%,

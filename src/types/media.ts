@@ -1,41 +1,53 @@
-export type StreamStatus = "LIVE" | "OFFLINE" | "ENDED";
+import type { ApiResponse } from "@/lib/api-client";
 
-export type StreamerSummary = {
+export type StreamStatus = "LIVE" | "OFFLINE";
+
+export type Stream = {
   id: number;
   username: string;
-  avatarUrl?: string | null;
+  title: string | null;
+  status: StreamStatus;
+  hlsUrl: string | null;
 };
 
-export type LiveStream = {
-  id: number;
-  title: string;
+export type Streamer = Stream;
+
+export type LiveStream = Stream & {
   description?: string | null;
-  status: StreamStatus;
-  hlsUrl: string;
   thumbnailUrl?: string | null;
   viewerCount?: number;
   startedAt?: string | null;
-  streamer: StreamerSummary;
 };
 
 export type VideoType = "VOD" | "RECORD";
 
-export type VodVideo = {
+export type Video = {
   id: number;
+  streamerUsername: string;
   title: string;
-  description?: string | null;
   type: VideoType;
   hlsUrl: string;
+  createdAt: string;
+};
+
+export type VodVideo = Video & {
+  description?: string | null;
   thumbnailUrl?: string | null;
   duration?: number | null;
-  createdAt?: string | null;
-  streamer: StreamerSummary;
 };
 
-export type LiveStreamsResponse = {
+export type LiveStreamsResponse = ApiResponse<{
   streams: LiveStream[];
-};
+}>;
 
-export type VideosResponse = {
+export type StreamerResponse = ApiResponse<{
+  streamer: Streamer;
+}>;
+
+export type VideosResponse = ApiResponse<{
   videos: VodVideo[];
-};
+}>;
+
+export type VideoResponse = ApiResponse<{
+  video: VodVideo;
+}>;

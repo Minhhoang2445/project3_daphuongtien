@@ -17,12 +17,10 @@ import {
 import { CopyButton } from "@/components/copy-button";
 import { HlsPlayer } from "@/components/hls-player";
 import { SiteHeader } from "@/components/site-header";
-import { StateNotice } from "@/components/state-feedback";
-import { getServerVideoRequest, getVideoRequest } from "@/lib/videos-api";
-import { mockVideos, sampleHlsUrl } from "@/lib/mock-data";
+import { getVideoRequest } from "@/lib/videos-api";
 import type { VodVideo } from "@/types/media";
 
-type VideoDetailStatus = "loading" | "ready" | "server" | "mock" | "error";
+type VideoDetailStatus = "loading" | "ready" | "error";
 
 type VideoDetailState = {
   video: VodVideo | null;
@@ -41,47 +39,21 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
 
   const requestVideo = useCallback(async (): Promise<VideoDetailState> => {
     try {
-      const video = await getVideoRequest(videoId);
+      const response = await getVideoRequest(videoId);
 
       return {
-        video,
+        video: response.data.video,
         status: "ready",
         message: null,
       };
     } catch (error) {
-      try {
-        const video = await getServerVideoRequest(videoId);
-
-        return {
-          video,
-          status: "server",
-          message: "Video được lấy trực tiếp từ VPS streaming.",
-        };
-      } catch {
-        // Use demo data below if neither backend nor VPS catalog can resolve this id.
-      }
-
-      const fallbackVideo =
-        mockVideos.find((item) => String(item.id) === videoId) ?? null;
-
-      if (!fallbackVideo) {
-        return {
-          video: null,
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Không tải được chi tiết VOD",
-        };
-      }
-
       return {
-        video: fallbackVideo,
-        status: "mock",
+        video: null,
+        status: "error",
         message:
           error instanceof Error
             ? error.message
-            : "Backend chưa sẵn sàng, đang hiển thị VOD mẫu",
+            : "Không tải được chi tiết VOD từ VPS",
       };
     }
   }, [videoId]);
@@ -110,9 +82,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
   }, [requestVideo]);
 
   const isLoading = state.status === "loading";
-  const isMock = state.status === "mock";
-  const isServer = state.status === "server";
-  const hlsUrl = state.video?.hlsUrl || sampleHlsUrl;
+  const hlsUrl = state.video?.hlsUrl || "";
 
   return (
     <main className="app-page">
@@ -137,26 +107,6 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
           <VideoDetailError message={state.message} />
         ) : (
           <div className="space-y-6">
-            {isMock && (
-              <StateNotice
-                tone="warning"
-                title="Đang hiển thị VOD mẫu"
-                message={`${state.message}. Khi backend trả chi tiết video, player sẽ dùng đúng hlsUrl thật.`}
-                actionLabel="Thử lại"
-                onAction={() => void loadVideo()}
-              />
-            )}
-
-            {isServer && (
-              <StateNotice
-                tone="success"
-                title="Đang phát video từ VPS"
-                message={state.message || "Nguồn phát được lấy từ server streaming."}
-                actionLabel="Làm mới"
-                onAction={() => void loadVideo()}
-              />
-            )}
-
             <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="min-w-0 space-y-5">
                 <HlsPlayer
@@ -190,7 +140,7 @@ export function VideoDetailClient({ videoId }: { videoId: string }) {
                     <InfoItem
                       icon={<UserRound className="size-4" />}
                       label="Streamer"
-                      value={`@${state.video.streamer.username}`}
+                      value={`@${state.video.streamerUsername}`}
                     />
                     <InfoItem
                       icon={<Clock3 className="size-4" />}
@@ -292,7 +242,7 @@ function VideoDetailError({ message }: { message: string | null }) {
         Không tải được VOD
       </h1>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
-        {message || "Backend không trả về video này và không có mock fallback."}
+        {message || "Backend không trả về video này."}
       </p>
     </div>
   );

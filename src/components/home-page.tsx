@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   CalendarDays,
   Clock3,
   Eye,
@@ -15,14 +16,11 @@ import {
 import {
   EmptyState,
   LoadingCardGrid,
-  StateNotice,
 } from "@/components/state-feedback";
 import { getLiveStreamsRequest, getVideosRequest } from "@/lib/home-api";
-import { mockLiveStreams, mockVideos } from "@/lib/mock-data";
-import { getServerVideosRequest } from "@/lib/videos-api";
 import type { LiveStream, VodVideo } from "@/types/media";
 
-type HomeStatus = "loading" | "ready" | "server" | "mock";
+type HomeStatus = "loading" | "ready" | "error";
 
 type HomeState = {
   streams: LiveStream[];
@@ -49,40 +47,20 @@ export function HomePage() {
       ]);
 
       return {
-        streams: liveData.streams,
-        videos: videoData.videos,
+        streams: liveData.data.streams,
+        videos: videoData.data.videos,
         status: "ready",
         message: null,
       };
     } catch (error) {
-      let serverMessage: string | null = null;
-
-      try {
-        const serverData = await getServerVideosRequest();
-        serverMessage = serverData.message;
-
-        if (serverData.videos.length > 0) {
-          return {
-            streams: mockLiveStreams,
-            videos: serverData.videos,
-            status: "server",
-            message: serverData.message,
-          };
-        }
-      } catch {
-        // Keep the home page usable with local demo data if the VPS has no catalog.
-      }
-
       return {
-        streams: mockLiveStreams,
-        videos: mockVideos,
-        status: "mock",
+        streams: [],
+        videos: [],
+        status: "error",
         message:
           error instanceof Error
-            ? `${error.message}. ${
-                serverMessage || "VPS chưa expose danh sách video qua HTTP."
-              }`
-            : "Backend chưa sẵn sàng, đang hiển thị dữ liệu mẫu",
+            ? error.message
+            : "Không tải được dữ liệu từ backend VPS",
       };
     }
   }
@@ -111,8 +89,7 @@ export function HomePage() {
   }, []);
 
   const isLoading = state.status === "loading";
-  const isMock = state.status === "mock";
-  const isServer = state.status === "server";
+  const isError = state.status === "error";
   const emptyHome =
     !isLoading && state.streams.length === 0 && state.videos.length === 0;
 
@@ -138,38 +115,14 @@ export function HomePage() {
             </button>
           </div>
 
-          {isMock && (
-            <div className="mt-6">
-              <StateNotice
-                tone="warning"
-                title="Đang hiển thị dữ liệu mẫu"
-                message={`${state.message}. Khi backend sẵn sàng, trang sẽ tự dùng dữ liệu thật.`}
-                actionLabel="Thử lại"
-                onAction={() => void loadHomeData()}
-              />
-            </div>
-          )}
-
-          {isServer && (
-            <div className="mt-6">
-              <StateNotice
-                tone="success"
-                title="Đang hiển thị video từ VPS"
-                message={
-                  state.message ||
-                  "VOD được lấy qua proxy Next.js từ server streaming."
-                }
-                actionLabel="Làm mới"
-                onAction={() => void loadHomeData()}
-              />
-            </div>
-          )}
         </div>
       </section>
 
       <section className="app-container space-y-9 py-8">
         {isLoading ? (
           <HomeSkeleton />
+        ) : isError ? (
+          <HomeError message={state.message} onRetry={() => void loadHomeData()} />
         ) : emptyHome ? (
           <EmptyHome />
         ) : (
@@ -250,10 +203,10 @@ function LiveStreamCard({ stream }: { stream: LiveStream }) {
   const startedText = formatRelativeDate(stream.startedAt);
 
   return (
-    <Link href={`/live/${stream.streamer.username}`} className="group block">
+    <Link href={`/live/${stream.username}`} className="group block">
       <article className="surface-card interactive-card overflow-hidden rounded-2xl">
         <Thumbnail
-          title={stream.title}
+          title={stream.title || `Live của @${stream.username}`}
           thumbnailUrl={stream.thumbnailUrl}
           variant="live"
         />
@@ -262,10 +215,10 @@ function LiveStreamCard({ stream }: { stream: LiveStream }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="line-clamp-2 text-base font-extrabold text-slate-950 group-hover:text-red-600">
-                {stream.title}
+                {stream.title || `Live của @${stream.username}`}
               </h3>
               <p className="mt-1 text-sm font-medium text-slate-500">
-                @{stream.streamer.username}
+                @{stream.username}
               </p>
             </div>
             <span className="badge badge-live flex-none">
@@ -314,7 +267,7 @@ function VodCard({ video }: { video: VodVideo }) {
               {video.title}
             </h3>
             <p className="mt-1 text-sm font-medium text-slate-500">
-              @{video.streamer.username}
+              @{video.streamerUsername}
             </p>
           </div>
 
@@ -363,7 +316,7 @@ function Thumbnail({
   return (
     <div
       className={`relative aspect-video bg-cover bg-center ${
-        thumbnailUrl ? "bg-slate-900" : "video-fallback"
+        thumbnailUrl ? "bg-slate-900" : "video-placeholder"
       }`}
       style={style}
       aria-label={title}
@@ -409,6 +362,30 @@ function EmptyHome() {
       title="Chưa có dữ liệu hiển thị"
       message="Khi có streamer live hoặc VOD được tạo, nội dung sẽ xuất hiện tại đây."
     />
+  );
+}
+
+function HomeError({
+  message,
+  onRetry,
+}: {
+  message: string | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="surface-panel rounded-2xl p-8 text-center">
+      <AlertCircle className="mx-auto mb-4 size-10 text-red-600" />
+      <h2 className="text-lg font-extrabold text-slate-950">
+        Không tải được dữ liệu từ VPS
+      </h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+        {message || "Vui lòng kiểm tra backend API và thử lại."}
+      </p>
+      <button type="button" onClick={onRetry} className="btn btn-secondary mt-5">
+        <RefreshCw className="size-4" />
+        Thử lại
+      </button>
+    </div>
   );
 }
 

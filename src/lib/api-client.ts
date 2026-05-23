@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = "http://localhost:8080/api/v1";
+const DEFAULT_API_BASE_URL = "http://103.6.234.179:8080/api/v1";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL;
@@ -6,7 +6,7 @@ export const API_BASE_URL =
 export type ApiResponse<T> = {
   success: boolean;
   message: string;
-  data?: T;
+  data: T;
   error?: {
     code: string;
     details?: string;
@@ -16,7 +16,6 @@ export type ApiResponse<T> = {
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: BodyInit | null;
   json?: unknown;
-  token?: string | null;
   skipAuth?: boolean;
 };
 
@@ -34,19 +33,6 @@ export class ApiClientError extends Error {
   }
 }
 
-export function getAccessToken() {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem("accessToken");
-}
-
-export function setAccessToken(token: string) {
-  window.localStorage.setItem("accessToken", token);
-}
-
-export function clearAccessToken() {
-  window.localStorage.removeItem("accessToken");
-}
-
 function buildUrl(path: string) {
   const baseUrl = API_BASE_URL.replace(/\/$/, "");
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -60,6 +46,7 @@ async function parseJson<T>(response: Response): Promise<ApiResponse<T>> {
     return {
       success: response.ok,
       message: response.ok ? "OK" : "Empty response",
+      data: undefined as T,
     };
   }
 
@@ -69,6 +56,7 @@ async function parseJson<T>(response: Response): Promise<ApiResponse<T>> {
     return {
       success: false,
       message: text,
+      data: undefined as T,
     };
   }
 }
@@ -76,17 +64,13 @@ async function parseJson<T>(response: Response): Promise<ApiResponse<T>> {
 export async function apiRequest<T>(
   path: string,
   options: ApiRequestOptions = {}
-): Promise<T> {
-  const { json, token, skipAuth, headers, ...requestOptions } = options;
-  const accessToken = skipAuth ? null : token ?? getAccessToken();
+): Promise<ApiResponse<T>> {
+  const { json, skipAuth, headers, ...requestOptions } = options;
+  void skipAuth;
   const requestHeaders = new Headers(headers);
 
   if (json !== undefined && !requestHeaders.has("Content-Type")) {
     requestHeaders.set("Content-Type", "application/json");
-  }
-
-  if (accessToken && !requestHeaders.has("Authorization")) {
-    requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
   let response: Response;
@@ -116,7 +100,7 @@ export async function apiRequest<T>(
     );
   }
 
-  return body.data as T;
+  return body;
 }
 
 export const api = {

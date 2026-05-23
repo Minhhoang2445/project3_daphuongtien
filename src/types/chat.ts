@@ -1,23 +1,26 @@
-import type { UserRole } from "@/types/auth";
-
-export type ChatUser = {
-  id: number;
-  username: string;
-  role: UserRole;
-};
+import type { ApiResponse } from "@/lib/api-client";
 
 export type ChatMessage = {
   id: number;
-  streamId: number;
+  viewerId: number;
+  username: string;
   message: string;
   createdAt: string;
-  user: ChatUser;
   clientId?: string;
 };
 
-export type ChatHistoryResponse = {
+export type ChatHistoryResponse = ApiResponse<{
   messages: ChatMessage[];
+}>;
+
+export type SendChatInput = {
+  viewerId: number;
+  message: string;
 };
+
+export type SendChatResponse = ApiResponse<{
+  message: ChatMessage;
+}>;
 
 export type ChatConnectionStatus =
   | "local"

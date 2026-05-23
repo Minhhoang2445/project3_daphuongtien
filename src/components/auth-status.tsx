@@ -34,9 +34,6 @@ export function AuthStatus() {
       <div className="hidden items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 sm:flex">
         <UserRound className="size-4" />
         <span className="font-bold">{user.username}</span>
-        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase text-emerald-700">
-          {user.role}
-        </span>
       </div>
       <button type="button" onClick={logout} className="btn btn-secondary min-h-9 px-3">
         <LogOut className="size-4" />

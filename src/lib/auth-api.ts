@@ -2,21 +2,20 @@ import { api } from "@/lib/api-client";
 import type {
   LoginInput,
   LoginResponse,
-  MeResponse,
   RegisterInput,
   RegisterResponse,
 } from "@/types/auth";
 
-export function loginRequest(input: LoginInput) {
-  return api.post<LoginResponse>("/auth/login", input, { skipAuth: true });
-}
-
-export function registerRequest(input: RegisterInput) {
-  return api.post<RegisterResponse>("/auth/register", input, {
+export function loginRequest(input: LoginInput): Promise<LoginResponse> {
+  return api.post<LoginResponse["data"]>("/viewer/login", input, {
     skipAuth: true,
   });
 }
 
-export function getCurrentUserRequest() {
-  return api.get<MeResponse>("/auth/me");
+export function registerRequest(
+  input: RegisterInput
+): Promise<RegisterResponse> {
+  return api.post<RegisterResponse["data"]>("/viewer/register", input, {
+    skipAuth: true,
+  });
 }

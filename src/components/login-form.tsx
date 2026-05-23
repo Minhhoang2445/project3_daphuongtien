@@ -9,7 +9,7 @@ import { useAuth } from "@/components/auth-provider";
 export function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await login({ email, password });
+      await login({ username, password });
       router.push("/dashboard");
     } catch (requestError) {
       setError(
@@ -43,14 +43,14 @@ export function LoginForm() {
       )}
 
       <label className="block">
-        <span className="text-sm font-bold text-slate-700">Email</span>
+        <span className="text-sm font-bold text-slate-700">Tên người dùng</span>
         <input
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          type="email"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          type="text"
           required
-          autoComplete="email"
-          placeholder="minhhoang@example.com"
+          autoComplete="username"
+          placeholder="viewer01"
           className="field mt-2"
         />
       </label>

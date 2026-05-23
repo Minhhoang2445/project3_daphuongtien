@@ -1,29 +1,10 @@
-import type { StreamStatus } from "@/types/media";
+import type { ApiResponse } from "@/lib/api-client";
 
-export type StreamConnection = {
+export type ObsConfig = {
   rtmpServer: string;
   streamKey: string;
   hlsUrl: string;
-  status: StreamStatus;
+  channelUrl: string;
 };
 
-export type StreamKeyResponse = StreamConnection;
-
-export type RegenerateStreamKeyResponse = StreamConnection;
-
-export type StreamInfoInput = {
-  title: string;
-  description: string;
-};
-
-export type StreamInfo = {
-  id: number;
-  title: string;
-  description?: string | null;
-  status: StreamStatus;
-  hlsUrl: string;
-};
-
-export type UpdateStreamInfoResponse = {
-  stream: StreamInfo;
-};
+export type ObsConfigResponse = ApiResponse<ObsConfig>;

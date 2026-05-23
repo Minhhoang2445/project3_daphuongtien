@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   BookOpen,
   CheckCircle2,
   ClipboardCheck,
@@ -16,24 +17,15 @@ import {
 import { useAuth } from "@/components/auth-provider";
 import { CopyButton } from "@/components/copy-button";
 import { SiteHeader } from "@/components/site-header";
-import { StateNotice } from "@/components/state-feedback";
-import { getStreamKeyRequest } from "@/lib/dashboard-api";
-import {
-  STREAMING_DEMO_CONNECTION,
-  STREAMING_STAT_URL,
-} from "@/lib/streaming-config";
-import type { StreamConnection } from "@/types/dashboard";
+import { getObsConfigRequest } from "@/lib/dashboard-api";
+import type { ObsConfig } from "@/types/dashboard";
 
-type GuideMode = "loading" | "ready" | "mock" | "guest";
+type GuideMode = "loading" | "ready" | "error";
 
 type GuideState = {
-  connection: StreamConnection;
+  connection: ObsConfig | null;
   mode: GuideMode;
   notice: string | null;
-};
-
-const mockGuideConnection: StreamConnection = {
-  ...STREAMING_DEMO_CONNECTION,
 };
 
 const outputSettings = [
@@ -50,31 +42,22 @@ export function GuidePageClient() {
   const [state, setState] = useState<GuideState | null>(null);
 
   const requestGuideState = useCallback(async (): Promise<GuideState> => {
-    if (!user) {
-      return {
-        connection: mockGuideConnection,
-        mode: "guest",
-        notice:
-          "Đang dùng cấu hình VPS demo của nhóm. Đăng nhập tài khoản STREAMER nếu backend đã cấp Stream Key riêng.",
-      };
-    }
-
     try {
-      const connection = await getStreamKeyRequest();
+      const response = await getObsConfigRequest(user?.username || "minhhoang");
 
       return {
-        connection,
+        connection: response.data,
         mode: "ready",
         notice: null,
       };
-    } catch (requestError) {
+    } catch (error) {
       return {
-        connection: mockGuideConnection,
-        mode: "mock",
+        connection: null,
+        mode: "error",
         notice:
-          requestError instanceof Error
-            ? requestError.message
-            : "Backend chưa sẵn sàng, đang hiển thị cấu hình VPS demo của nhóm",
+          error instanceof Error
+            ? error.message
+            : "Không tải được OBS config từ VPS.",
       };
     }
   }, [user]);
@@ -119,8 +102,8 @@ export function GuidePageClient() {
                 Hướng dẫn OBS và Larix
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-                Cấu hình thiết bị đẩy RTMP lên server, sau đó xem bằng HLS độ
-                trễ thấp trên live page.
+                Cấu hình thiết bị đẩy RTMP lên server, sau đó xem bằng HLS trên
+                live page.
               </p>
             </div>
 
@@ -135,8 +118,10 @@ export function GuidePageClient() {
       <section className="app-container space-y-6 py-8">
         {isLoading ? (
           <GuideSkeleton />
+        ) : state.mode === "error" || !state.connection ? (
+          <GuideError message={state.notice} onRetry={() => void refreshGuide()} />
         ) : (
-          <GuideContent state={state} isSignedIn={Boolean(user)} />
+          <GuideContent connection={state.connection} isSignedIn={Boolean(user)} />
         )}
       </section>
     </main>
@@ -144,29 +129,19 @@ export function GuidePageClient() {
 }
 
 function GuideContent({
-  state,
+  connection,
   isSignedIn,
 }: {
-  state: GuideState;
+  connection: ObsConfig;
   isSignedIn: boolean;
 }) {
   const larixUrl = useMemo(
-    () => buildLarixUrl(state.connection.rtmpServer, state.connection.streamKey),
-    [state.connection.rtmpServer, state.connection.streamKey]
+    () => buildLarixUrl(connection.rtmpServer, connection.streamKey),
+    [connection.rtmpServer, connection.streamKey]
   );
-
-  const showNotice = state.mode === "guest" || state.mode === "mock";
 
   return (
     <>
-      {showNotice && (
-        <StateNotice
-          tone="warning"
-          title="Đang hiển thị cấu hình VPS demo"
-          message={`${state.notice}. Cấu hình này khớp server streaming đang chạy; khi backend trả dữ liệu, trang sẽ ưu tiên dữ liệu backend.`}
-        />
-      )}
-
       <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="surface-panel rounded-2xl p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
@@ -176,23 +151,14 @@ function GuideContent({
                 Thông tin stream
               </h2>
             </div>
-            <span
-              className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
-                state.connection.status === "LIVE"
-                  ? "bg-red-600 text-white"
-                  : "bg-slate-200 text-slate-600"
-              }`}
-            >
-              {state.connection.status}
-            </span>
           </div>
 
           <div className="space-y-3">
-            <CopyRow label="RTMP Server" value={state.connection.rtmpServer} />
-            <CopyRow label="Stream Key" value={state.connection.streamKey} />
-            <CopyRow label="HLS URL" value={state.connection.hlsUrl} />
+            <CopyRow label="RTMP Server" value={connection.rtmpServer} />
+            <CopyRow label="Stream Key" value={connection.streamKey} />
+            <CopyRow label="HLS URL" value={connection.hlsUrl} />
+            <CopyRow label="Channel URL" value={connection.channelUrl} />
             <CopyRow label="Larix URL" value={larixUrl} />
-            <CopyRow label="Statistics" value={STREAMING_STAT_URL} />
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -280,16 +246,38 @@ function GuideContent({
 
         <div className="grid gap-3 md:grid-cols-2">
           <CheckItem>Mở HLS URL trên browser, file .m3u8 trả về 200.</CheckItem>
-          <CheckItem>Mở trang statistics để kiểm tra publisher và bandwidth.</CheckItem>
           <CheckItem>Trong live page, player load được playlist và segment.</CheckItem>
           <CheckItem>Web HTTP nên dùng HLS HTTP để tránh mixed content.</CheckItem>
           <CheckItem>Nginx bật CORS cho .m3u8 và segment nếu khác domain.</CheckItem>
-          <CheckItem>Với HLS đã tối ưu, mục tiêu thực tế là khoảng 2-5 giây.</CheckItem>
-          <CheckItem>Muốn realtime dưới 1 giây cần WebRTC/LiveKit hoặc WHIP/WHEP thay vì HLS.</CheckItem>
+          <CheckItem>HLS live thường có latency 5-20 giây.</CheckItem>
           <CheckItem>Vào /live/username để chụp minh chứng sau khi stream chạy.</CheckItem>
         </div>
       </section>
     </>
+  );
+}
+
+function GuideError({
+  message,
+  onRetry,
+}: {
+  message: string | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="surface-panel rounded-2xl p-8 text-center">
+      <AlertCircle className="mx-auto mb-4 size-10 text-red-600" />
+      <h2 className="text-lg font-extrabold text-slate-950">
+        Không tải được OBS config
+      </h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+        {message || "Vui lòng kiểm tra API /streamers/:username/obs-config."}
+      </p>
+      <button type="button" onClick={onRetry} className="btn btn-secondary mt-5">
+        <RefreshCw className="size-4" />
+        Thử lại
+      </button>
+    </div>
   );
 }
 

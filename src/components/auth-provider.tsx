@@ -10,16 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-import {
-  clearAccessToken,
-  getAccessToken,
-  setAccessToken,
-} from "@/lib/api-client";
-import {
-  getCurrentUserRequest,
-  loginRequest,
-  registerRequest,
-} from "@/lib/auth-api";
+import { loginRequest, registerRequest } from "@/lib/auth-api";
 import type {
   AuthUser,
   LoginInput,
@@ -41,82 +32,61 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function getCurrentViewer(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+
+  const viewerId = window.localStorage.getItem("viewerId");
+  const username = window.localStorage.getItem("username");
+
+  if (!viewerId || !username) return null;
+
+  return {
+    id: Number(viewerId),
+    username,
+  };
+}
+
+function setCurrentViewer(viewer: AuthUser) {
+  window.localStorage.setItem("viewerId", String(viewer.id));
+  window.localStorage.setItem("username", viewer.username);
+}
+
+function clearCurrentViewer() {
+  window.localStorage.removeItem("viewerId");
+  window.localStorage.removeItem("username");
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [error, setError] = useState<string | null>(null);
 
   const logout = useCallback(() => {
-    clearAccessToken();
+    clearCurrentViewer();
     setUser(null);
     setStatus("unauthenticated");
     setError(null);
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const token = getAccessToken();
-
-    if (!token) {
-      setUser(null);
-      setStatus("unauthenticated");
-      return;
-    }
-
-    try {
-      setStatus("loading");
-      const data = await getCurrentUserRequest();
-      setUser(data.user);
-      setStatus("authenticated");
-      setError(null);
-    } catch (requestError) {
-      clearAccessToken();
-      setUser(null);
-      setStatus("unauthenticated");
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Không thể lấy thông tin tài khoản"
-      );
-    }
+    const viewer = getCurrentViewer();
+    setUser(viewer);
+    setStatus(viewer ? "authenticated" : "unauthenticated");
+    setError(null);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     async function hydrateUser() {
-      const token = getAccessToken();
+      const viewer = getCurrentViewer();
 
-      if (!token) {
-        await Promise.resolve();
+      await Promise.resolve();
 
-        if (!cancelled) {
-          setUser(null);
-          setStatus("unauthenticated");
-        }
-
-        return;
-      }
-
-      try {
-        const data = await getCurrentUserRequest();
-
-        if (!cancelled) {
-          setUser(data.user);
-          setStatus("authenticated");
-          setError(null);
-        }
-      } catch (requestError) {
-        clearAccessToken();
-
-        if (!cancelled) {
-          setUser(null);
-          setStatus("unauthenticated");
-          setError(
-            requestError instanceof Error
-              ? requestError.message
-              : "Không thể lấy thông tin tài khoản"
-          );
-        }
+      if (!cancelled) {
+        setUser(viewer);
+        setStatus(viewer ? "authenticated" : "unauthenticated");
+        setError(null);
       }
     }
 
@@ -128,24 +98,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (input: LoginInput) => {
-    const data = await loginRequest(input);
-    setAccessToken(data.accessToken);
-    setUser(data.user);
+    const response = await loginRequest(input);
+    const viewer = response.data.viewer;
+
+    setCurrentViewer(viewer);
+    setUser(viewer);
     setStatus("authenticated");
     setError(null);
   }, []);
 
   const register = useCallback(async (input: RegisterInput) => {
-    const data = await registerRequest(input);
-
-    if (data.accessToken) {
-      setAccessToken(data.accessToken);
-      setUser(data.user);
-      setStatus("authenticated");
-    }
-
+    const response = await registerRequest(input);
     setError(null);
-    return data;
+    return response;
   }, []);
 
   const value = useMemo(

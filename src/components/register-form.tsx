@@ -5,27 +5,11 @@ import Link from "next/link";
 import { AlertCircle, CheckCircle2, Loader2, UserPlus } from "lucide-react";
 
 import { useAuth } from "@/components/auth-provider";
-import type { UserRole } from "@/types/auth";
-
-const roles: Array<{ value: UserRole; label: string; detail: string }> = [
-  {
-    value: "VIEWER",
-    label: "Viewer",
-    detail: "Tài khoản xem live và chat.",
-  },
-  {
-    value: "STREAMER",
-    label: "Streamer",
-    detail: "Tài khoản demo lấy Stream Key.",
-  },
-];
 
 export function RegisterForm() {
   const { register } = useAuth();
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("STREAMER");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -37,12 +21,8 @@ export function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      const data = await register({ username, email, password, role });
-      setSuccess(
-        data.accessToken
-          ? "Đăng ký thành công và đã đăng nhập."
-          : "Đăng ký thành công. Hãy đăng nhập bằng tài khoản vừa tạo."
-      );
+      await register({ username, password });
+      setSuccess("Đăng ký thành công. Hãy đăng nhập bằng tài khoản vừa tạo.");
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : "Đăng ký thất bại"
@@ -91,60 +71,18 @@ export function RegisterForm() {
       </label>
 
       <label className="block">
-        <span className="text-sm font-bold text-slate-700">Email</span>
-        <input
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="minhhoang@example.com"
-          className="field mt-2"
-        />
-      </label>
-
-      <label className="block">
         <span className="text-sm font-bold text-slate-700">Mật khẩu</span>
         <input
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           type="password"
-          minLength={8}
+          minLength={6}
           required
           autoComplete="new-password"
-          placeholder="Ít nhất 8 ký tự"
+          placeholder="Ít nhất 6 ký tự"
           className="field mt-2"
         />
       </label>
-
-      <fieldset>
-        <legend className="text-sm font-bold text-slate-700">Vai trò</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {roles.map((item) => (
-            <label
-              key={item.value}
-              className={`cursor-pointer rounded-xl border p-3 text-sm transition ${
-                role === item.value
-                  ? "border-red-200 bg-red-50 text-red-950"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="role"
-                value={item.value}
-                checked={role === item.value}
-                onChange={() => setRole(item.value)}
-                className="sr-only"
-              />
-              <span className="block font-extrabold">{item.label}</span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">
-                {item.detail}
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
 
       <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
         {isSubmitting ? (

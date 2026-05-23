@@ -118,7 +118,7 @@ export function OfflineState({
   message?: string;
 }) {
   return (
-    <div className="video-fallback flex aspect-video flex-col items-center justify-center rounded-2xl border border-slate-900/10 px-5 text-center text-white shadow-sm">
+    <div className="video-placeholder flex aspect-video flex-col items-center justify-center rounded-2xl border border-slate-900/10 px-5 text-center text-white shadow-sm">
       <VideoOff className="mb-3 size-12 text-white/75" />
       <h2 className="text-lg font-extrabold">Stream đang offline</h2>
       <p className="mt-2 max-w-md text-sm leading-6 text-white/75">

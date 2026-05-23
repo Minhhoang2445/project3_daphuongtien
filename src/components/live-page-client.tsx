@@ -4,13 +4,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type FormEvent,
   type ReactNode,
 } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   CalendarDays,
   Eye,
   MessageSquareText,
@@ -23,78 +23,66 @@ import { HlsPlayer } from "@/components/hls-player";
 import { useAuth } from "@/components/auth-provider";
 import {
   OfflineState,
-  StateNotice,
   StreamStatusPill,
 } from "@/components/state-feedback";
-import { getAccessToken } from "@/lib/api-client";
 import {
   getStreamChatHistoryRequest,
-  getStreamDetailRequest,
+  getStreamerDetailRequest,
+  sendStreamChatMessageRequest,
 } from "@/lib/live-api";
-import { mockChatMessages, mockLiveStreams } from "@/lib/mock-data";
 import type { ChatConnectionStatus, ChatMessage } from "@/types/chat";
 import type { LiveStream } from "@/types/media";
 
-type LivePageStatus = "loading" | "ready" | "mock";
+type LivePageStatus = "loading" | "ready" | "error";
 
 type LivePageState = {
-  stream: LiveStream;
+  stream: LiveStream | null;
   messages: ChatMessage[];
   status: LivePageStatus;
   notice: string | null;
+  chatNotice: string | null;
 };
 
 type LivePageClientProps = {
   username: string;
 };
 
-const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080";
-
 export function LivePageClient({ username }: LivePageClientProps) {
   const [state, setState] = useState<LivePageState | null>(null);
 
   const requestLivePageData = useCallback(async (): Promise<LivePageState> => {
     try {
-      const streamData = await getStreamDetailRequest(username);
+      const streamResponse = await getStreamerDetailRequest(username);
       let messages: ChatMessage[] = [];
+      let chatNotice: string | null = null;
 
       try {
-        const chatData = await getStreamChatHistoryRequest(streamData.stream.id);
-        messages = chatData.messages;
-      } catch {
-        messages = [];
+        const chatResponse = await getStreamChatHistoryRequest(username);
+        messages = chatResponse.data.messages;
+      } catch (error) {
+        chatNotice =
+          error instanceof Error
+            ? error.message
+            : "Không tải được lịch sử chat.";
       }
 
       return {
-        stream: streamData.stream,
+        stream: streamResponse.data.streamer,
         messages,
         status: "ready",
         notice: null,
+        chatNotice,
       };
     } catch (error) {
-      const stream =
-        mockLiveStreams.find((item) => item.streamer.username === username) ||
-        null;
-
       return {
-        stream: stream ?? {
-          id: 0,
-          title: `Live page của @${username}`,
-          description: "Mock offline stream để demo trạng thái offline.",
-          status: "OFFLINE",
-          hlsUrl: "",
-          viewerCount: 0,
-          streamer: {
-            id: 0,
-            username,
-          },
-        },
-        messages: stream ? mockChatMessages : [],
-        status: "mock",
+        stream: null,
+        messages: [],
+        status: "error",
         notice:
           error instanceof Error
             ? error.message
-            : "Backend chưa sẵn sàng, đang hiển thị live page mẫu",
+            : "Không tải được thông tin streamer từ VPS.",
+        chatNotice: null,
       };
     }
   }, [username]);
@@ -126,35 +114,35 @@ export function LivePageClient({ username }: LivePageClientProps) {
     return <LivePageSkeleton />;
   }
 
+  if (state.status === "error" || !state.stream) {
+    return (
+      <section className="app-container py-8">
+        <LivePageError
+          message={state.notice}
+          onRetry={() => void refreshLivePage()}
+        />
+      </section>
+    );
+  }
+
   const isLive = state.stream.status === "LIVE";
   const canPlay = isLive && Boolean(state.stream.hlsUrl);
 
   return (
     <section className="app-container py-8">
-      {state.status === "mock" && (
-        <div className="mb-6">
-          <StateNotice
-            tone="warning"
-            title="Đang hiển thị live page mẫu"
-            message={`${state.notice}. Khi backend sẵn sàng, trang sẽ dùng dữ liệu thật của streamer.`}
-            actionLabel="Thử lại"
-            onAction={() => void refreshLivePage()}
-          />
-        </div>
-      )}
-
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <StreamStatusPill isLive={isLive} />
-            <span className="badge badge-muted">@{state.stream.streamer.username}</span>
+            <span className="badge badge-muted">@{state.stream.username}</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-normal text-slate-950">
             {state.stream.title || `Live của @${username}`}
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
-            {state.stream.description ||
-              "Không có mô tả cho buổi live này."}
+            {isLive
+              ? "Streamer đang LIVE. Player dùng HLS URL thật từ backend."
+              : "Streamer hiện đang offline."}
           </p>
         </div>
 
@@ -168,9 +156,8 @@ export function LivePageClient({ username }: LivePageClientProps) {
         <div className="min-w-0 space-y-4">
           {canPlay ? (
             <HlsPlayer
-              src={state.stream.hlsUrl}
-              title={state.stream.title}
-              poster={state.stream.thumbnailUrl}
+              src={state.stream.hlsUrl || ""}
+              title={state.stream.title || `Live của @${state.stream.username}`}
               isLive
               muted
             />
@@ -182,10 +169,10 @@ export function LivePageClient({ username }: LivePageClientProps) {
         </div>
 
         <LiveChatPanel
-          key={`${state.status}-${state.stream.id}`}
-          streamId={state.stream.id}
+          key={`${state.stream.username}-${state.messages.length}`}
+          streamUsername={state.stream.username}
           messages={state.messages}
-          isMock={state.status === "mock"}
+          initialNotice={state.chatNotice}
         />
       </div>
 
@@ -196,11 +183,35 @@ export function LivePageClient({ username }: LivePageClientProps) {
   );
 }
 
+function LivePageError({
+  message,
+  onRetry,
+}: {
+  message: string | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="surface-panel rounded-2xl p-8 text-center">
+      <AlertCircle className="mx-auto mb-4 size-10 text-red-600" />
+      <h1 className="text-lg font-extrabold text-slate-950">
+        Không tải được live page
+      </h1>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+        {message || "Vui lòng kiểm tra API streamer trên VPS và thử lại."}
+      </p>
+      <button type="button" onClick={onRetry} className="btn btn-secondary mt-5">
+        <RefreshCw className="size-4" />
+        Thử lại
+      </button>
+    </div>
+  );
+}
+
 function OfflinePanel({ stream }: { stream: LiveStream }) {
   return (
     <OfflineState
-      username={stream.streamer.username}
-      message={`Khi @${stream.streamer.username} bắt đầu live và backend trả hlsUrl, player sẽ hiển thị tại đây.`}
+      username={stream.username}
+      message={`@${stream.username} đang offline. Frontend sẽ không dùng HLS giả khi backend trả OFFLINE hoặc hlsUrl null.`}
     />
   );
 }
@@ -211,7 +222,7 @@ function StreamInfo({ stream }: { stream: LiveStream }) {
       <InfoTile
         icon={<UserRound className="size-4" />}
         label="Streamer"
-        value={`@${stream.streamer.username}`}
+        value={`@${stream.username}`}
       />
       <InfoTile
         icon={<Eye className="size-4" />}
@@ -226,7 +237,7 @@ function StreamInfo({ stream }: { stream: LiveStream }) {
       <div className="surface-card rounded-xl p-4 md:col-span-3">
         <p className="text-sm font-extrabold text-slate-950">HLS URL</p>
         <p className="mt-2 break-all font-mono text-xs leading-5 text-slate-500">
-          {stream.hlsUrl || "Backend chưa trả hlsUrl"}
+          {stream.hlsUrl || "Backend trả hlsUrl null vì streamer đang OFFLINE"}
         </p>
       </div>
     </div>
@@ -254,24 +265,22 @@ function InfoTile({
 }
 
 function LiveChatPanel({
-  streamId,
+  streamUsername,
   messages,
-  isMock,
+  initialNotice,
 }: {
-  streamId: number;
+  streamUsername: string;
   messages: ChatMessage[];
-  isMock: boolean;
+  initialNotice: string | null;
 }) {
   const { user } = useAuth();
-  const socketRef = useRef<WebSocket | null>(null);
   const [draft, setDraft] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(messages);
-  const [connectionStatus, setConnectionStatus] =
-    useState<ChatConnectionStatus>(isMock || !streamId ? "local" : "connecting");
+  const [connectionStatus, setConnectionStatus] = useState<ChatConnectionStatus>(
+    initialNotice ? "error" : "connected"
+  );
   const [connectionNotice, setConnectionNotice] = useState<string | null>(
-    isMock || !streamId
-      ? "Chat đang chạy local trên UI để demo khi backend realtime chưa sẵn sàng."
-      : null
+    initialNotice
   );
 
   const connectionLabel = useMemo(
@@ -279,120 +288,45 @@ function LiveChatPanel({
     [connectionStatus]
   );
 
-  useEffect(() => {
-    if (isMock || !streamId) {
-      return;
-    }
-
-    let closedByClient = false;
-
-    const socketUrl = buildChatSocketUrl(streamId);
-    let socket: WebSocket;
-
-    try {
-      socket = new WebSocket(socketUrl);
-    } catch {
-      window.setTimeout(() => {
-        setConnectionStatus("error");
-        setConnectionNotice("Không khởi tạo được WebSocket.");
-      }, 0);
-      return;
-    }
-
-    socketRef.current = socket;
-
-    socket.addEventListener("open", () => {
-      if (closedByClient) return;
-
-      setConnectionStatus("connected");
-      setConnectionNotice("Đã kết nối WebSocket.");
-      socket.send(
-        JSON.stringify({
-          event: "join_stream",
-          data: {
-            streamId,
-          },
-        })
-      );
-    });
-
-    socket.addEventListener("message", (event) => {
-      const nextMessage = parseChatSocketMessage(event.data, streamId);
-
-      if (!nextMessage) return;
-
-      setChatMessages((current) => mergeChatMessage(current, nextMessage));
-    });
-
-    socket.addEventListener("close", () => {
-      if (closedByClient) return;
-
-      setConnectionStatus("closed");
-      setConnectionNotice("WebSocket đã đóng. Lịch sử chat vẫn được giữ lại.");
-    });
-
-    socket.addEventListener("error", () => {
-      if (closedByClient) return;
-
-      setConnectionStatus("error");
-      setConnectionNotice(
-        "Không kết nối được WebSocket. Kiểm tra NEXT_PUBLIC_WS_URL và backend realtime."
-      );
-    });
-
-    return () => {
-      closedByClient = true;
-      socketRef.current = null;
-
-      if (
-        socket.readyState === WebSocket.OPEN ||
-        socket.readyState === WebSocket.CONNECTING
-      ) {
-        socket.close();
-      }
-    };
-  }, [isMock, streamId]);
-
-  function handleSend(event: FormEvent<HTMLFormElement>) {
+  async function handleSend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const message = draft.trim();
     if (!message || !user) return;
 
-    const clientId = `${streamId}-${user.id}-${Date.now()}`;
+    const clientId = `${streamUsername}-${user.id}-${Date.now()}`;
     const optimisticMessage: ChatMessage = {
       id: Date.now(),
-      streamId,
+      viewerId: user.id,
+      username: user.username,
       message,
       clientId,
       createdAt: new Date().toISOString(),
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
     };
-    const socket = socketRef.current;
-
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(
-        JSON.stringify({
-          event: "send_message",
-          data: {
-            streamId,
-            message,
-            clientId,
-          },
-        })
-      );
-    } else if (!isMock) {
-      setConnectionNotice(
-        "WebSocket chưa sẵn sàng, tin nhắn được thêm local để không đứt demo."
-      );
-    }
 
     setChatMessages((current) => mergeChatMessage(current, optimisticMessage));
     setDraft("");
+
+    try {
+      const response = await sendStreamChatMessageRequest(streamUsername, {
+        viewerId: user.id,
+        message,
+      });
+
+      setConnectionStatus("connected");
+      setConnectionNotice(null);
+      setChatMessages((current) =>
+        mergeChatMessage(current, {
+          ...response.data.message,
+          clientId,
+        })
+      );
+    } catch (error) {
+      setConnectionStatus("error");
+      setConnectionNotice(
+        error instanceof Error ? error.message : "Không gửi được tin nhắn."
+      );
+    }
   }
 
   return (
@@ -411,7 +345,7 @@ function LiveChatPanel({
           </span>
         </div>
         <p className="mt-2 text-xs leading-5 text-slate-500">
-          {connectionNotice || "Chat realtime nhận tin nhắn mới qua WebSocket."}
+          {connectionNotice || "Chat lấy và gửi tin nhắn qua REST API thật."}
         </p>
       </div>
 
@@ -425,7 +359,7 @@ function LiveChatPanel({
             <ChatBubble
               key={`${message.id}-${message.clientId || "server"}`}
               message={message}
-              isOwnMessage={message.user.id === user?.id}
+              isOwnMessage={message.viewerId === user?.id}
             />
           ))
         )}
@@ -475,10 +409,7 @@ function ChatBubble({
       <div className="mb-1 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-extrabold text-slate-950">
-            {message.user.username}
-          </p>
-          <p className="text-[11px] font-extrabold uppercase text-slate-400">
-            {message.user.role}
+            {message.username}
           </p>
         </div>
         <span className="flex-none text-xs font-medium text-slate-400">
@@ -496,18 +427,18 @@ function getChatConnectionLabel(status: ChatConnectionStatus) {
   switch (status) {
     case "connected":
       return {
-        text: "Realtime",
+        text: "REST",
         className: "bg-emerald-50 text-emerald-800",
+      };
+    case "error":
+      return {
+        text: "Error",
+        className: "bg-red-50 text-red-800",
       };
     case "connecting":
       return {
         text: "Connecting",
         className: "bg-slate-100 text-slate-600",
-      };
-    case "error":
-      return {
-        text: "WS error",
-        className: "bg-red-50 text-red-800",
       };
     case "closed":
       return {
@@ -517,69 +448,9 @@ function getChatConnectionLabel(status: ChatConnectionStatus) {
     case "local":
     default:
       return {
-        text: "Local",
+        text: "REST",
         className: "bg-slate-100 text-slate-600",
       };
-  }
-}
-
-function buildChatSocketUrl(streamId: number) {
-  const token = getAccessToken();
-
-  try {
-    const url = new URL(WS_BASE_URL);
-    url.searchParams.set("streamId", String(streamId));
-
-    if (token) {
-      url.searchParams.set("token", token);
-    }
-
-    return url.toString();
-  } catch {
-    return WS_BASE_URL;
-  }
-}
-
-function parseChatSocketMessage(data: unknown, fallbackStreamId: number) {
-  if (typeof data !== "string") return null;
-
-  try {
-    const parsed = JSON.parse(data) as {
-      event?: string;
-      type?: string;
-      data?: Partial<ChatMessage>;
-      payload?: Partial<ChatMessage>;
-      message?: string;
-      streamId?: number;
-      id?: number;
-      createdAt?: string;
-      user?: ChatMessage["user"];
-      clientId?: string;
-    };
-
-    const eventName = parsed.event || parsed.type;
-    const payload = parsed.data || parsed.payload || parsed;
-
-    if (eventName && eventName !== "new_message" && eventName !== "message") {
-      return null;
-    }
-
-    if (!payload.message) return null;
-
-    return {
-      id: Number(payload.id ?? Date.now()),
-      streamId: Number(payload.streamId ?? fallbackStreamId),
-      message: String(payload.message),
-      clientId: payload.clientId,
-      createdAt: payload.createdAt || new Date().toISOString(),
-      user: payload.user || {
-        id: 0,
-        username: "server",
-        role: "VIEWER",
-      },
-    } satisfies ChatMessage;
-  } catch {
-    return null;
   }
 }
 

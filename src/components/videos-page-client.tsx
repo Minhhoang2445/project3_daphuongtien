@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   CalendarDays,
   Clock3,
   Filter,
@@ -15,14 +16,12 @@ import {
 import {
   EmptyState,
   LoadingCardGrid,
-  StateNotice,
 } from "@/components/state-feedback";
 import { SiteHeader } from "@/components/site-header";
-import { getServerVideosRequest, getVideosRequest } from "@/lib/videos-api";
-import { mockVideos } from "@/lib/mock-data";
+import { getVideosRequest } from "@/lib/videos-api";
 import type { VideoType, VodVideo } from "@/types/media";
 
-type VideosStatus = "loading" | "ready" | "server" | "mock";
+type VideosStatus = "loading" | "ready" | "error";
 type VideoFilter = "ALL" | VideoType;
 
 type VideosState = {
@@ -53,37 +52,18 @@ export function VideosPageClient() {
       const data = await getVideosRequest();
 
       return {
-        videos: data.videos,
+        videos: data.data.videos,
         status: "ready",
         message: null,
       };
     } catch (error) {
-      let serverMessage: string | null = null;
-
-      try {
-        const serverData = await getServerVideosRequest();
-        serverMessage = serverData.message;
-
-        if (serverData.videos.length > 0) {
-          return {
-            videos: serverData.videos,
-            status: "server",
-            message: serverData.message,
-          };
-        }
-      } catch {
-        // Fall back to local demo data below when the VPS has no exposed catalog yet.
-      }
-
       return {
-        videos: mockVideos,
-        status: "mock",
+        videos: [],
+        status: "error",
         message:
           error instanceof Error
-            ? `${error.message}. ${
-                serverMessage || "VPS chưa expose danh sách video qua HTTP."
-              }`
-            : "Backend chưa sẵn sàng, đang hiển thị VOD mẫu",
+            ? error.message
+            : "Không tải được danh sách video từ VPS",
       };
     }
   }
@@ -112,8 +92,7 @@ export function VideosPageClient() {
   }, []);
 
   const isLoading = state.status === "loading";
-  const isMock = state.status === "mock";
-  const isServer = state.status === "server";
+  const isError = state.status === "error";
 
   const filteredVideos = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
@@ -123,7 +102,7 @@ export function VideosPageClient() {
       const matchesQuery =
         cleanQuery.length === 0 ||
         video.title.toLowerCase().includes(cleanQuery) ||
-        video.streamer.username.toLowerCase().includes(cleanQuery) ||
+        video.streamerUsername.toLowerCase().includes(cleanQuery) ||
         (video.description || "").toLowerCase().includes(cleanQuery);
 
       return matchesType && matchesQuery;
@@ -153,32 +132,6 @@ export function VideosPageClient() {
             </button>
           </div>
 
-          {isMock && (
-            <div className="mt-6">
-              <StateNotice
-                tone="warning"
-                title="Đang hiển thị VOD mẫu"
-                message={`${state.message}. Khi backend trả dữ liệu thật, danh sách sẽ tự cập nhật.`}
-                actionLabel="Thử lại"
-                onAction={() => void loadVideos()}
-              />
-            </div>
-          )}
-
-          {isServer && (
-            <div className="mt-6">
-              <StateNotice
-                tone="success"
-                title="Đang hiển thị video từ VPS"
-                message={
-                  state.message ||
-                  "Danh sách được lấy qua proxy Next.js từ server streaming."
-                }
-                actionLabel="Làm mới VPS"
-                onAction={() => void loadVideos()}
-              />
-            </div>
-          )}
         </div>
       </section>
 
@@ -217,6 +170,8 @@ export function VideosPageClient() {
 
         {isLoading ? (
           <VideosSkeleton />
+        ) : isError ? (
+          <VideosError message={state.message} onRetry={() => void loadVideos()} />
         ) : filteredVideos.length === 0 ? (
           <EmptyVideos hasSourceData={state.videos.length > 0} />
         ) : (
@@ -244,7 +199,7 @@ function VideoCard({ video }: { video: VodVideo }) {
                 {video.title}
               </h2>
               <p className="mt-1 text-sm font-medium text-slate-500">
-                @{video.streamer.username}
+                @{video.streamerUsername}
               </p>
             </div>
             <span className="badge badge-muted flex-none">{video.type}</span>
@@ -282,7 +237,7 @@ function VideoThumbnail({ video }: { video: VodVideo }) {
   return (
     <div
       className={`relative aspect-video bg-cover bg-center ${
-        video.thumbnailUrl ? "bg-slate-900" : "video-fallback"
+        video.thumbnailUrl ? "bg-slate-900" : "video-placeholder"
       }`}
       style={style}
       aria-label={video.title}
@@ -318,6 +273,30 @@ function EmptyVideos({ hasSourceData }: { hasSourceData: boolean }) {
           : "Khi backend có video đã record hoặc VOD HLS, danh sách sẽ hiển thị tại đây."
       }
     />
+  );
+}
+
+function VideosError({
+  message,
+  onRetry,
+}: {
+  message: string | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="surface-panel rounded-2xl p-8 text-center">
+      <AlertCircle className="mx-auto mb-4 size-10 text-red-600" />
+      <h2 className="text-lg font-extrabold text-slate-950">
+        Không tải được VOD từ VPS
+      </h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+        {message || "Vui lòng kiểm tra API /videos và thử lại."}
+      </p>
+      <button type="button" onClick={onRetry} className="btn btn-secondary mt-5">
+        <RefreshCw className="size-4" />
+        Thử lại
+      </button>
+    </div>
   );
 }
 

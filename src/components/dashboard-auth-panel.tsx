@@ -10,10 +10,7 @@ import type { AuthUser } from "@/types/auth";
 
 const previewUser: AuthUser = {
   id: 1,
-  username: "preview_streamer",
-  email: "preview@example.com",
-  role: "STREAMER",
-  avatarUrl: null,
+  username: "minhhoang",
 };
 
 export function DashboardAuthPanel() {
@@ -32,8 +29,8 @@ export function DashboardAuthPanel() {
             Cần đăng nhập
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Dashboard streamer cần JWT token để lấy RTMP URL, Stream Key và cập
-            nhật thông tin buổi live.
+            Dashboard dùng username trong localStorage để lấy OBS/Larix config
+            từ backend thật trên VPS.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/login" className="btn btn-primary">
