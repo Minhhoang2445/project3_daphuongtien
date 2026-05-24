@@ -263,13 +263,16 @@ function HlsPlayerInner({
   }, [isLive, shouldAutoPlay, src]);
 
   function handleQualityChange(value: string) {
-    setSelectedQuality(value);
+  setSelectedQuality(value);
 
-    if (!hlsRef.current) return;
+  if (!hlsRef.current) return;
 
-    const level = Number(value);
-    hlsRef.current.currentLevel = level;
-  }
+  const level = Number(value);
+
+  hlsRef.current.currentLevel = level;
+  hlsRef.current.loadLevel = level;
+  hlsRef.current.nextLevel = level;
+}
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-900 bg-slate-950 shadow-xl shadow-slate-950/10">
