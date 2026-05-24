@@ -168,18 +168,18 @@ function HlsPlayerInner({
     }
 
     if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: isLive,
-        backBufferLength: isLive ? 30 : 90,
-        ...(isLive
-          ? {
-              liveSyncDurationCount: 2,
-              liveMaxLatencyDurationCount: 5,
-              maxLiveSyncPlaybackRate: 1.2,
-            }
-          : {}),
-      });
+     const hls = new Hls({
+  enableWorker: true,
+  lowLatencyMode: false,
+  backBufferLength: isLive ? 120 : 90,
+  ...(isLive
+    ? {
+        liveSyncDuration: 6,
+        liveMaxLatencyDuration: 12,
+        maxLiveSyncPlaybackRate: 1.1,
+      }
+    : {}),
+});
 
       hlsRef.current = hls;
       hls.loadSource(src);
