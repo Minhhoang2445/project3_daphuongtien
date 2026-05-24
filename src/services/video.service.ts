@@ -20,6 +20,7 @@ function mapVideo(video: {
     hlsUrl: video.hlsUrl,
     recordPath: video.recordPath,
     vodPath: video.vodPath,
+    isAdaptive: video.hlsUrl.includes('master.m3u8'),
     createdAt: video.createdAt
   };
 }
