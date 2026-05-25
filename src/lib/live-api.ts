@@ -21,7 +21,7 @@ export function getStreamChatHistoryRequest(
   username: string
 ): Promise<ChatHistoryResponse> {
   return api.get<ChatHistoryResponse["data"]>(
-    `/streamers/${encodeURIComponent(username)}/chat`,
+    `/chat/${encodeURIComponent(username)}/chat`,
     {
       skipAuth: true,
     }
@@ -33,7 +33,7 @@ export function sendStreamChatMessageRequest(
   input: SendChatInput
 ): Promise<SendChatResponse> {
   return api.post<SendChatResponse["data"]>(
-    `/streamers/${encodeURIComponent(username)}/chat`,
+    `/chat/${encodeURIComponent(username)}/chat`,
     input,
     {
       skipAuth: true,
